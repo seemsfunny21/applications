@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071426">
+  <meta name="description" content="Οι τέσσερις εφαρμογές μου σε μία αρχική οθόνη.">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Οι εφαρμογές μου">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>Οι εφαρμογές μου</title>
+  <style>
+  :root{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color-scheme:dark;--bg:#071426;--border:rgba(142,189,255,.22);--text:#f5f9ff}
+  *{box-sizing:border-box}
+  html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+  body{background:var(--bg);color:var(--text)}
+  main{height:100vh;height:100dvh;width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:clamp(8px,2vw,14px);padding:calc(10px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) calc(10px + env(safe-area-inset-left,0px))}
+  a.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.8vh,24px);min-width:0;min-height:0;overflow:hidden;border-radius:clamp(17px,4vw,28px);border:1px solid var(--border);background:linear-gradient(160deg,#16395f,#0d2440 85%);box-shadow:inset 0 1px rgba(255,255,255,.075),0 8px 20px #0005;text-decoration:none;color:var(--text);text-align:center;-webkit-tap-highlight-color:transparent;transition:transform .16s,filter .16s}
+  a.tile:before{content:"";position:absolute;width:85%;aspect-ratio:1;top:-30%;left:5%;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 67%);opacity:.22;pointer-events:none}
+  a.tile:active{transform:scale(.975);filter:brightness(1.16)}
+  a.tile:focus-visible{outline:3px solid #add5ff;outline-offset:-6px}
+  .symbol{display:grid;place-items:center;position:relative;width:clamp(64px,19vw,118px);height:clamp(64px,19vw,118px);border-radius:30%;background:linear-gradient(140deg,#ffffff22,#ffffff08);border:1px solid #ffffff29;box-shadow:inset 0 1px #ffffff1f,0 14px 38px #0005}
+  .symbol svg{width:57%;height:57%;stroke:var(--accent);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;fill:none;filter:drop-shadow(0 0 10px var(--glow))}
+  .name{position:relative;max-width:100%;padding:0 4px;font-weight:800;font-size:clamp(16px,3.9vw,24px);line-height:1.15;letter-spacing:-.025em;overflow-wrap:anywhere;text-shadow:0 2px 8px #0008}
+  .bike{--accent:#64e3a8;--glow:#0dc878}
+  .routes{--accent:#79c2ff;--glow:#1688f8}
+  .reminders{--accent:#ffd274;--glow:#fab02b}
+  .pegasus{--accent:#dcacff;--glow:#9f5dff}
+  @media(min-width:700px){main{max-width:740px;margin:auto;padding:18px}}
+  @media(max-height:390px){a.tile{gap:5px}.symbol{height:48px;width:48px;border-radius:15px}.name{font-size:14px}}
+  @media(prefers-reduced-motion:reduce){a.tile{transition:none}}
+  </style>
+</head>
+<body>
+<main aria-label="Οι εφαρμογές μου">
+  <a class="tile bike" href="https://seemsfunny21.github.io/voltes/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Ποδηλασίας">
+    <span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="m5.5 17.5 5-10 5 10h-10l4.2-7.8M15.5 17.5l3-8h-3M8.8 7.5h3M16.5 6.5h2"/></svg></span><span class="name">Ποδηλασία</span>
+  </a>
+  <a class="tile routes" href="https://seemsfunny21.github.io/douleia/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Δρομολογίων">
+    <span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7M3 17h2M14 17h2"/><circle cx="8" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 9h5M6 12h4"/></svg></span><span class="name">Δρομολόγια</span>
+  </a>
+  <a class="tile reminders" href="https://seemsfunny21.github.io/reminder/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Υπενθυμίσεων">
+    <span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 6-3 7-3 9h18c0-2-3-3-3-9M10 21h4"/></svg></span><span class="name">Υπενθυμίσεις</span>
+  </a>
+  <a class="tile pegasus" href="https://seemsfunny21.github.io/seemsfunny/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Pegasus">
+    <span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 7 11 11M5 4 2 7l5 5 3-3M19 20l3-3-5-5-3 3M18 4 7 15M19 3l3 3-5 5-3-3M5 20l-3-3 5-5 3 3"/></svg></span><span class="name">Pegasus</span>
+  </a>
+</main>
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{}));}
+</script>
+</body></html>

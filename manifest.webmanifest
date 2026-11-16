@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "Οι εφαρμογές μου",
+  "short_name": "Εφαρμογές",
+  "description": "Τέσσερις εφαρμογές, ένα εικονίδιο.",
+  "lang": "el",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#071426",
+  "theme_color": "#071426",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
