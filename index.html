@@ -225,6 +225,43 @@
     @media(prefers-reduced-motion:reduce) {
       *,*::before,*::after{animation:none!important;transition:none!important}
     }
+
+    /* Turbo launcher: keep each app alive inside the installed PWA. */
+    .viewer{
+      position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;
+      background:#071426;color:#f6faff;
+      opacity:0;visibility:hidden;pointer-events:none;
+      transition:opacity .18s ease,visibility 0s linear .18s;
+    }
+    .viewer.is-open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .18s ease}
+    .viewer-bar{
+      height:calc(48px + env(safe-area-inset-top,0px));min-height:calc(48px + env(safe-area-inset-top,0px));
+      padding:env(safe-area-inset-top,0px) 13px 0;display:flex;align-items:center;gap:8px;
+      border-bottom:1px solid #37608a66;background:linear-gradient(130deg,#102844,#0a1c32);
+      box-shadow:0 4px 18px #0003;
+    }
+    .viewer-back,.viewer-external{
+      display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;
+      border:1px solid #719bcc50;background:#1a3b60;box-shadow:inset 0 1px #ffffff16;
+      color:#eff7ff;text-decoration:none;border-radius:12px;font:700 12px system-ui,sans-serif;
+      padding:0 11px;white-space:nowrap;cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .viewer-back svg,.viewer-external svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .viewer-back:active,.viewer-external:active{filter:brightness(1.25)}
+    .viewer-back:focus-visible,.viewer-external:focus-visible{outline:2px solid #d2efff;outline-offset:2px}
+    .viewer-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;font-weight:800;font-size:13px}
+    .viewer-external{font-size:11px;padding:0 8px}
+    .frame-host{position:relative;flex:1;min-height:0;background:#061426}
+    .app-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#071426;opacity:0;visibility:hidden;pointer-events:none}
+    .app-frame.is-active{opacity:1;visibility:visible;pointer-events:auto}
+    .viewer-loading{position:absolute;inset:0;display:grid;place-items:center;gap:12px;text-align:center;color:#bdd5ee;font-size:13px;background:#071426;pointer-events:none}
+    .viewer-loading[hidden]{display:none}
+    .viewer-spinner{height:35px;width:35px;margin:0 auto 14px;border-radius:50%;border:3px solid #2b4f71;border-top-color:#85caff;animation:spin .8s linear infinite}
+    .viewer-loading small{display:block;margin-top:14px;padding:0 30px;max-width:350px;color:#93aec8;font-size:11px;line-height:1.45}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:370px){.viewer-title{font-size:11px}.viewer-back,.viewer-external{padding:0 7px;font-size:11px}}
+    @media(prefers-reduced-motion:reduce){.viewer,.viewer.is-open{transition:none}.viewer-spinner{animation:none}}
   </style>
 </head>
 <body>
@@ -264,10 +301,147 @@
     </div>
     <footer class="footer">Your personal space</footer>
   </main>
+
+  <section class="viewer" id="viewer" aria-label="Ανοιχτή εφαρμογή" aria-hidden="true">
+    <div class="viewer-bar">
+      <button type="button" class="viewer-back" id="viewerBack" aria-label="Πίσω στις εφαρμογές">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7"/></svg> Εφαρμογές
+      </button>
+      <strong class="viewer-title" id="viewerTitle">Εφαρμογή</strong>
+      <a class="viewer-external" id="viewerExternal" href="https://seemsfunny21.github.io/voltes/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα εφαρμογής στον browser">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4h8v8M20 4l-10 10M18 14v5H5V6h5"/></svg> Browser
+      </a>
+    </div>
+    <div class="frame-host" id="frameHost">
+      <div class="viewer-loading" id="viewerLoading" role="status" aria-live="polite" hidden>
+        <div><div class="viewer-spinner" aria-hidden="true"></div>
+        <strong id="loadingTitle">Άνοιγμα εφαρμογής…</strong>
+        <small>Η πρώτη φόρτωση χρειάζεται σύνδεση. Στις επόμενες εναλλαγές η εφαρμογή παραμένει στη μνήμη.</small></div>
+      </div>
+    </div>
+  </section>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{}));
     }
+  </script>
+
+  <script>
+    (() => {
+      'use strict';
+      const APPS = Object.freeze({
+        voltes:{name:'Ποδηλασία',url:'https://seemsfunny21.github.io/voltes/'},
+        douleia:{name:'Δρομολόγια',url:'https://seemsfunny21.github.io/douleia/'},
+        reminder:{name:'Υπενθυμίσεις',url:'https://seemsfunny21.github.io/reminder/'},
+        seemsfunny:{name:'Pegasus',url:'https://seemsfunny21.github.io/seemsfunny/'}
+      });
+      const viewer=document.getElementById('viewer');
+      const host=document.getElementById('frameHost');
+      const title=document.getElementById('viewerTitle');
+      const external=document.getElementById('viewerExternal');
+      const loader=document.getElementById('viewerLoading');
+      const loadingTitle=document.getElementById('loadingTitle');
+      const goBack=document.getElementById('viewerBack');
+      const frames=new Map();
+      const ready=new Set();
+      let current=null;
+      let warningTimer=null;
+
+      function prepare(key){
+        if(!APPS[key] || frames.has(key))return frames.get(key);
+        const frame=document.createElement('iframe');
+        frame.className='app-frame';
+        frame.title=APPS[key].name;
+        frame.setAttribute('allow','geolocation; camera; microphone; clipboard-read; clipboard-write; fullscreen');
+        frame.setAttribute('loading','eager');
+        frame.referrerPolicy='strict-origin-when-cross-origin';
+        frame.addEventListener('load',()=>{
+          ready.add(key);
+          if(current===key){loader.hidden=true;}
+        });
+        frame.src=APPS[key].url;
+        frames.set(key,frame);
+        host.insertBefore(frame,loader);
+        return frame;
+      }
+
+      function show(key,addHistory){
+        if(!APPS[key])return;
+        const previous=current;
+        current=key;
+        title.textContent=APPS[key].name;
+        external.href=APPS[key].url;
+        const frame=prepare(key);
+        for(const [id,node] of frames)node.classList.toggle('is-active',id===key);
+        loader.hidden=ready.has(key);
+        loadingTitle.textContent='Άνοιγμα '+APPS[key].name+'…';
+        viewer.classList.add('is-open');
+        viewer.setAttribute('aria-hidden','false');
+        document.querySelector('.shell').setAttribute('inert','');
+        if(addHistory)history.pushState({launcherApp:key},'', '?app='+encodeURIComponent(key));
+        if(warningTimer)clearTimeout(warningTimer);
+        if(!ready.has(key)){
+          warningTimer=setTimeout(()=>{
+            if(current===key&&!ready.has(key)){
+              loadingTitle.textContent='Η φόρτωση καθυστερεί. Μπορείς να δοκιμάσεις το «Browser» πάνω δεξιά.';
+            }
+          },11000);
+        }
+      }
+      function hide(){
+        current=null;
+        viewer.classList.remove('is-open');
+        viewer.setAttribute('aria-hidden','true');
+        document.querySelector('.shell').removeAttribute('inert');
+        loader.hidden=true;
+        if(warningTimer)clearTimeout(warningTimer);
+        // Do not unload frames; returning to an app is immediate.
+      }
+
+      const tiles=document.querySelectorAll('a.tile');
+      for(const tile of tiles){
+        const key=Object.keys(APPS).find(id=>tile.href===APPS[id].url);
+        if(!key)continue;
+        tile.addEventListener('click',event=>{
+          if(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+          event.preventDefault();
+          show(key,true);
+        });
+      }
+      goBack.addEventListener('click',()=>{
+        if(history.state&&history.state.launcherApp){history.back();}
+        else{
+          history.replaceState(null,'',location.pathname);
+          hide();
+        }
+      });
+      window.addEventListener('popstate',event=>{
+        const key=event.state&&event.state.launcherApp;
+        if(key&&APPS[key])show(key,false);else hide();
+      });
+      const initial=new URLSearchParams(location.search).get('app');
+      if(initial&&APPS[initial]){
+        history.replaceState({launcherApp:initial},'','?app='+encodeURIComponent(initial));
+        show(initial,false);
+      }
+
+      // Stagger background warmup after the menu has painted. Do not download four
+      // expensive apps at exactly the same moment, and respect data saver.
+      if(!navigator.connection || !navigator.connection.saveData){
+        const start=()=>{
+          const warm=()=>{
+            const ids=['voltes','douleia','reminder','seemsfunny'];
+            ids.forEach((key,index)=>setTimeout(()=>{
+              if(!frames.has(key) && document.visibilityState==='visible')prepare(key);
+            },index*950));
+          };
+          if('requestIdleCallback' in window)requestIdleCallback(warm,{timeout:1600});
+          else setTimeout(warm,500);
+        };
+        if(document.readyState==='complete')start();
+        else window.addEventListener('load',start,{once:true});
+      }
+    })();
   </script>
 </body>
 </html>
