@@ -1,449 +1,147 @@
 <!doctype html>
 <html lang="el">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#071426">
-  <meta name="color-scheme" content="dark">
-  <meta name="description" content="Οι εφαρμογές μου — τέσσερις εφαρμογές, ένα άγγιγμα.">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Οι εφαρμογές μου">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" type="image/svg+xml" href="./icon.svg">
-  <link rel="apple-touch-icon" href="./icon-192.png">
-  <title>Οι εφαρμογές μου</title>
-  <style>
-    :root {
-      font-family: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-      color-scheme: dark;
-      --bg: #071426;
-      --text: #f6faff;
-      --muted: #a9bed6;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; width: 100%; height: 100%; }
-    html { background: var(--bg); }
-    body {
-      color: var(--text);
-      overflow: hidden;
-      background:
-        radial-gradient(ellipse 80% 40% at 50% 4%, #15427875, transparent 80%),
-        radial-gradient(ellipse 70% 45% at 100% 100%, #17498755, transparent 80%),
-        linear-gradient(160deg,#050f1e,#091b31 58%,#061222);
-      -webkit-tap-highlight-color: transparent;
-    }
-    .aura {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(44px);
-      opacity: .44;
-      pointer-events: none;
-      z-index: 0;
-      animation: drift 15s ease-in-out infinite alternate;
-    }
-    .aura.one { width: 280px; height: 280px; top: 9%; left: -135px; background: #1264ab; }
-    .aura.two { width: 280px; height: 280px; right: -140px; bottom: 8%; background: #254c9f; animation-delay: -7s; }
-    .shell {
-      position: relative;
-      isolation: isolate;
-      z-index: 1;
-      width: min(100%,560px);
-      min-height: 100vh;
-      min-height: 100dvh;
-      margin: auto;
-      padding: calc(env(safe-area-inset-top,0px) + 24px) 17px calc(env(safe-area-inset-bottom,0px) + 19px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: clamp(21px,4vh,34px);
-    }
-    .heading { text-align: center; display:grid; justify-items:center; gap:9px; }
-    .eyebrow { font-size: 10px; font-weight: 800; letter-spacing: .3em; color:#70bafa; }
-    .heading h1 {
-      margin: 0;
-      font-weight: 800;
-      font-size: clamp(24px,6.4vw,32px);
-      line-height: 1.2;
-      letter-spacing: -.045em;
-    }
-    .heading p { margin:0; color:var(--muted); font-size: 13px; }
-    .sparkle {
-      display:inline-block;
-      width: 9px; height: 9px;
-      background:#78c4ff;
-      border-radius: 3px;
-      transform: rotate(45deg);
-      box-shadow:0 0 16px #5caeffaa;
-      animation:twinkle 3.5s ease-in-out infinite;
-      margin-bottom:4px;
-    }
-    .cards-wrap { position:relative; width:min(100%, 376px); }
-    .orbit {
-      position: absolute;
-      z-index: -1;
-      width: 275px;
-      height: 275px;
-      border: 1px solid rgba(125,184,251,.15);
-      box-shadow: 0 0 35px #2464b113,inset 0 0 45px #2464b10b;
-      border-radius: 50%;
-      top: 50%;left:50%;
-      transform:translate(-50%,-50%);
-      pointer-events:none;
-    }
-    .orbit::after {
-      content:"";
-      position:absolute;inset:-18px;border-radius:50%;
-      border:1px dashed rgba(130,189,244,.1);
-      animation:orbit 45s linear infinite;
-    }
-    .cards {
-      display:grid;
-      grid-template-columns: repeat(2,minmax(0,1fr));
-      gap: 14px;
-      width:100%;
-    }
-    .tile {
-      --rgb: 116,196,255;
-      --accent: #74c4ff;
-      min-width:0;
-      min-height: 157px;
-      position:relative;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap: 11px;
-      padding: 15px 9px 14px;
-      overflow:hidden;
-      border-radius:22px;
-      border:1px solid rgba(143,196,251,.25);
-      text-decoration:none;
-      text-align:center;
-      color:var(--text);
-      background:
-        radial-gradient(circle at 50% 0%, rgba(var(--rgb),.18),transparent 65%),
-        linear-gradient(160deg,rgba(26,58,91,.9),rgba(11,30,53,.93));
-      box-shadow:inset 0 1px 0 #ffffff16,0 10px 27px #0005;
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter:blur(15px);
-      transition:transform .18s ease,filter .18s ease,border-color .18s ease;
-      animation: card-enter .55s both;
-    }
-    .tile:nth-child(2) { animation-delay:.09s; }
-    .tile:nth-child(3) { animation-delay:.18s; }
-    .tile:nth-child(4) { animation-delay:.27s; }
-    .tile::before {
-      content:"";
-      position:absolute;top:0;left:22%;right:22%;height:2px;
-      background:linear-gradient(90deg,transparent,rgba(var(--rgb),.9),transparent);
-      box-shadow:0 0 19px rgba(var(--rgb),.45);
-    }
-    .tile::after {
-      content:"";
-      position:absolute;inset:0;
-      pointer-events:none;
-      background:linear-gradient(130deg,#ffffff0d,transparent 36%);
-    }
-    .tile:focus-visible { outline:3px solid #cde9ff; outline-offset:3px; }
-    .tile:active { transform:scale(.95);filter:brightness(1.18); }
-    @media(hover:hover) {
-      .tile:hover { transform:translateY(-5px);border-color:rgba(var(--rgb),.75);filter:brightness(1.12); }
-    }
-    .cycling { --accent:#60e5b2; --rgb:96,229,178; }
-    .routes { --accent:#72c3ff; --rgb:114,195,255; }
-    .reminders { --accent:#ffca7d; --rgb:255,202,125; }
-    .pegasus { --accent:#d5a4ff; --rgb:213,164,255; }
-    .glyph {
-      width:59px;height:59px;
-      flex:none;
-      display:grid;place-items:center;
-      position:relative;
-      background:linear-gradient(150deg,rgba(var(--rgb),.20),rgba(var(--rgb),.055));
-      border:1px solid rgba(var(--rgb),.33);
-      box-shadow:inset 0 1px 0 #ffffff1c,0 0 26px rgba(var(--rgb),.10);
-      border-radius:19px;
-      animation:levitate 4.3s ease-in-out infinite;
-    }
-    .tile:nth-child(2) .glyph { animation-delay:-1.15s; }
-    .tile:nth-child(3) .glyph { animation-delay:-2.35s; }
-    .tile:nth-child(4) .glyph { animation-delay:-3.3s; }
-    .glyph svg {
-      width:35px;height:35px;
-      fill:none;stroke:var(--accent);stroke-width:1.75;
-      stroke-linecap:round;stroke-linejoin:round;
-      filter:drop-shadow(0 0 6px rgba(var(--rgb),.36));
-    }
-    .name {
-      font-size:clamp(15px,4.2vw,18px);
-      font-weight:800;
-      letter-spacing:-.027em;
-      line-height:1.12;
-      overflow-wrap:anywhere;
-    }
-    .desc { font-size:clamp(10px,2.6vw,11px);color:#b8cee5;line-height:1.28; }
-    .footer {
-      display:flex;align-items:center;gap:8px;
-      font-size:10px;
-      letter-spacing:.14em;
-      font-weight:700;
-      color:#7795b5;
-      text-transform:uppercase;
-      text-align:center;
-    }
-    .footer::before,.footer::after {
-      content:"";width:19px;height:1px;background:#496b8b;
-    }
-    @keyframes card-enter { from{opacity:0;transform:translateY(15px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)} }
-    @keyframes levitate {0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-    @keyframes twinkle {0%,100%{opacity:.5;box-shadow:0 0 8px #5caeff66}50%{opacity:1;box-shadow:0 0 18px #5caeffcc}}
-    @keyframes drift {from{transform:translate(-15px,-18px)}to{transform:translate(42px,28px)}}
-    @keyframes orbit {to{transform:rotate(360deg)}}
-    @media(max-width:350px) {
-      .cards{gap:11px}
-      .tile{min-height:144px;border-radius:19px;gap:8px}
-      .glyph{width:53px;height:53px;border-radius:16px}
-      .glyph svg{width:32px;height:32px}
-      .name{font-size:14px}
-    }
-    @media(max-height:630px){
-      .shell{gap:16px;padding-top:12px;padding-bottom:12px}
-      .heading{gap:5px}
-      .heading h1{font-size:23px}
-      .heading p{font-size:11px}
-      .tile{min-height:127px;gap:7px;padding:10px 8px}
-      .glyph{width:48px;height:48px;border-radius:15px}
-      .glyph svg{width:30px;height:30px}
-      .desc{font-size:10px}
-      .footer{font-size:9px}
-    }
-    @media(max-height:450px){
-      body{overflow:auto}
-      .shell{min-height:450px}
-    }
-    @media(prefers-reduced-motion:reduce) {
-      *,*::before,*::after{animation:none!important;transition:none!important}
-    }
-
-    /* Turbo launcher: keep each app alive inside the installed PWA. */
-    .viewer{
-      position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;
-      background:#071426;color:#f6faff;
-      opacity:0;visibility:hidden;pointer-events:none;
-      transition:opacity .18s ease,visibility 0s linear .18s;
-    }
-    .viewer.is-open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .18s ease}
-    .viewer-bar{
-      height:calc(48px + env(safe-area-inset-top,0px));min-height:calc(48px + env(safe-area-inset-top,0px));
-      padding:env(safe-area-inset-top,0px) 13px 0;display:flex;align-items:center;gap:8px;
-      border-bottom:1px solid #37608a66;background:linear-gradient(130deg,#102844,#0a1c32);
-      box-shadow:0 4px 18px #0003;
-    }
-    .viewer-back,.viewer-external{
-      display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;
-      border:1px solid #719bcc50;background:#1a3b60;box-shadow:inset 0 1px #ffffff16;
-      color:#eff7ff;text-decoration:none;border-radius:12px;font:700 12px system-ui,sans-serif;
-      padding:0 11px;white-space:nowrap;cursor:pointer;
-      -webkit-tap-highlight-color:transparent;
-    }
-    .viewer-back svg,.viewer-external svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    .viewer-back:active,.viewer-external:active{filter:brightness(1.25)}
-    .viewer-back:focus-visible,.viewer-external:focus-visible{outline:2px solid #d2efff;outline-offset:2px}
-    .viewer-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;font-weight:800;font-size:13px}
-    .viewer-external{font-size:11px;padding:0 8px}
-    .frame-host{position:relative;flex:1;min-height:0;background:#061426}
-    .app-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#071426;opacity:0;visibility:hidden;pointer-events:none}
-    .viewer.is-open .app-frame.is-active{opacity:1;visibility:visible;pointer-events:auto}
-    .viewer:not(.is-open) .app-frame{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
-    .viewer-loading{position:absolute;inset:0;display:grid;place-items:center;gap:12px;text-align:center;color:#bdd5ee;font-size:13px;background:#071426;pointer-events:none}
-    .viewer-loading[hidden]{display:none}
-    .viewer-spinner{height:35px;width:35px;margin:0 auto 14px;border-radius:50%;border:3px solid #2b4f71;border-top-color:#85caff;animation:spin .8s linear infinite}
-    .viewer-loading small{display:block;margin-top:14px;padding:0 30px;max-width:350px;color:#93aec8;font-size:11px;line-height:1.45}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @media(max-width:370px){.viewer-title{font-size:11px}.viewer-back,.viewer-external{padding:0 7px;font-size:11px}}
-    @media(prefers-reduced-motion:reduce){.viewer,.viewer.is-open{transition:none}.viewer-spinner{animation:none}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Τέσσερις εφαρμογές, μία οθόνη.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Οι εφαρμογές μου">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Οι εφαρμογές μου</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--bg:#071426;--fg:#f4f9ff}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--fg)}
+.app{display:flex;flex-direction:column;width:100%;height:100vh;height:100dvh;overflow:hidden;background:var(--bg)}
+.tabs{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex:0 0 auto;
+  gap:4px;align-items:stretch;min-height:47px;
+  padding:calc(5px + env(safe-area-inset-top,0px)) 7px 5px;
+  background:linear-gradient(180deg,#112b49,#091b30);
+  border-bottom:1px solid #416b984f;box-shadow:0 4px 16px #020a1480;z-index:3
+}
+.tab{
+  appearance:none;min-width:0;min-height:39px;cursor:pointer;
+  background:#122c49;border:1px solid transparent;border-radius:11px;
+  color:#bed2e8;font-size:clamp(10px,2.65vw,13px);font-weight:750;
+  letter-spacing:-.02em;line-height:1.1;text-align:center;
+  padding:7px 1px;white-space:nowrap;overflow:hidden;text-overflow:clip;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .16s,color .16s,border-color .16s;
+}
+.tab[aria-selected="true"]{
+  background:linear-gradient(155deg,#205586,#173b64);
+  border-color:#63b6ff93;color:#fff;
+  box-shadow:inset 0 1px #ffffff2a,0 0 14px #1784e329;
+}
+.tab:focus-visible{outline:2px solid #a9deff;outline-offset:-3px}
+.tab:active{filter:brightness(1.2)}
+.stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#061424}
+.app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
+.app-frame.active{display:block}
+.loading{
+  position:absolute;inset:0;display:grid;place-items:center;
+  background:#071426;color:#c8d9ec;text-align:center;
+  padding:18px;z-index:1;font-size:13px;font-weight:650;pointer-events:none
+}
+.loading[hidden]{display:none}
+.loading span{display:block;width:30px;height:30px;border:3px solid #355c83;border-top-color:#a3d8ff;border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
 </head>
 <body>
-  <div class="aura one" aria-hidden="true"></div>
-  <div class="aura two" aria-hidden="true"></div>
-  <main class="shell">
-    <header class="heading">
-      <span class="sparkle" aria-hidden="true"></span>
-      <span class="eyebrow">MY APPS</span>
-      <h1>Οι εφαρμογές μου</h1>
-      <p>Όλα σε ένα σημείο, με ένα άγγιγμα.</p>
-    </header>
-    <div class="cards-wrap">
-      <div class="orbit" aria-hidden="true"></div>
-      <nav class="cards" aria-label="Επιλογή εφαρμογής">
-        <a class="tile cycling" href="https://seemsfunny21.github.io/voltes/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Ποδηλασίας">
-          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="m5.5 17.5 5-10 5 10h-10l4.2-7.8M15.5 17.5l3-8h-3M8.8 7.5h3M16.5 6.5h2"/></svg></span>
-          <span class="name">Ποδηλασία</span>
-          <span class="desc">Βόλτες &amp; διαδρομές</span>
-        </a>
-        <a class="tile routes" href="https://seemsfunny21.github.io/douleia/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Δρομολογίων">
-          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7M3 17h2M14 17h2"/><circle cx="8" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 9h5M6 12h4"/></svg></span>
-          <span class="name">Δρομολόγια</span>
-          <span class="desc">Ώρες &amp; οδηγοί</span>
-        </a>
-        <a class="tile reminders" href="https://seemsfunny21.github.io/reminder/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Υπενθυμίσεων">
-          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 6-3 7-3 9h18c0-2-3-3-3-9M10 21h4"/></svg></span>
-          <span class="name">Υπενθυμίσεις</span>
-          <span class="desc">Καθημερινή οργάνωση</span>
-        </a>
-        <a class="tile pegasus" href="https://seemsfunny21.github.io/seemsfunny/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Pegasus">
-          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 7 11 11M5 4 2 7l5 5 3-3M19 20l3-3-5-5-3 3M18 4 7 15M19 3l3 3-5 5-3-3M5 20l-3-3 5-5 3 3"/></svg></span>
-          <span class="name">Pegasus</span>
-          <span class="desc">Προπόνηση &amp; στόχοι</span>
-        </a>
-      </nav>
-    </div>
-    <footer class="footer">Your personal space</footer>
+<div class="app">
+  <nav class="tabs" aria-label="Επιλογή εφαρμογής" role="tablist">
+    <button class="tab" id="tab-voltes" type="button" role="tab" aria-controls="frame-voltes" aria-selected="true" data-app="voltes">Ποδηλασία</button>
+    <button class="tab" id="tab-douleia" type="button" role="tab" aria-controls="frame-douleia" aria-selected="false" data-app="douleia">Δρομολόγια</button>
+    <button class="tab" id="tab-reminder" type="button" role="tab" aria-controls="frame-reminder" aria-selected="false" data-app="reminder">Υπενθυμίσεις</button>
+    <button class="tab" id="tab-seemsfunny" type="button" role="tab" aria-controls="frame-seemsfunny" aria-selected="false" data-app="seemsfunny">Pegasus</button>
+  </nav>
+  <main class="stage" id="stage" aria-label="Περιεχόμενο εφαρμογής">
+    <div class="loading" id="loading" role="status" aria-live="polite"><div><span aria-hidden="true"></span>Άνοιγμα Ποδηλασίας…</div></div>
   </main>
-
-  <section class="viewer" id="viewer" aria-label="Ανοιχτή εφαρμογή" aria-hidden="true" inert>
-    <div class="viewer-bar">
-      <button type="button" class="viewer-back" id="viewerBack" aria-label="Πίσω στις εφαρμογές">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7"/></svg> Εφαρμογές
-      </button>
-      <strong class="viewer-title" id="viewerTitle">Εφαρμογή</strong>
-      <a class="viewer-external" id="viewerExternal" href="https://seemsfunny21.github.io/voltes/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα εφαρμογής στον browser">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4h8v8M20 4l-10 10M18 14v5H5V6h5"/></svg> Browser
-      </a>
-    </div>
-    <div class="frame-host" id="frameHost">
-      <div class="viewer-loading" id="viewerLoading" role="status" aria-live="polite" hidden>
-        <div><div class="viewer-spinner" aria-hidden="true"></div>
-        <strong id="loadingTitle">Άνοιγμα εφαρμογής…</strong>
-        <small>Η πρώτη φόρτωση χρειάζεται σύνδεση. Στις επόμενες εναλλαγές η εφαρμογή παραμένει στη μνήμη.</small></div>
-      </div>
-    </div>
-  </section>
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{}));
+</div>
+<script>
+(() => {
+  'use strict';
+  const apps = Object.freeze({
+    voltes:{name:'Ποδηλασία',url:'https://seemsfunny21.github.io/voltes/'},
+    douleia:{name:'Δρομολόγια',url:'https://seemsfunny21.github.io/douleia/'},
+    reminder:{name:'Υπενθυμίσεις',url:'https://seemsfunny21.github.io/reminder/'},
+    seemsfunny:{name:'Pegasus',url:'https://seemsfunny21.github.io/seemsfunny/'}
+  });
+  const stage=document.getElementById('stage');
+  const tabs=Array.from(document.querySelectorAll('.tab'));
+  const loading=document.getElementById('loading');
+  const frames=new Map();
+  const ready=new Set();
+  let current='voltes';
+  let warmupStarted=false;
+  function createFrame(key){
+    if(frames.has(key))return frames.get(key);
+    const app=apps[key];
+    const frame=document.createElement('iframe');
+    frame.id='frame-'+key;
+    frame.className='app-frame';
+    frame.title=app.name;
+    frame.setAttribute('allow','geolocation; camera; microphone; clipboard-read; clipboard-write; fullscreen');
+    frame.setAttribute('loading','eager');
+    frame.referrerPolicy='strict-origin-when-cross-origin';
+    frame.addEventListener('load',()=>{
+      ready.add(key);
+      if(current===key)loading.hidden=true;
+    });
+    frame.src=app.url;
+    frames.set(key,frame);
+    stage.insertBefore(frame,loading);
+    return frame;
+  }
+  function select(key){
+    if(!apps[key])return;
+    current=key;
+    for(const tab of tabs){
+      const selected=tab.dataset.app===key;
+      tab.setAttribute('aria-selected',selected?'true':'false');
     }
-  </script>
-
-  <script>
-    (() => {
-      'use strict';
-      const APPS = Object.freeze({
-        voltes:{name:'Ποδηλασία',url:'https://seemsfunny21.github.io/voltes/'},
-        douleia:{name:'Δρομολόγια',url:'https://seemsfunny21.github.io/douleia/'},
-        reminder:{name:'Υπενθυμίσεις',url:'https://seemsfunny21.github.io/reminder/'},
-        seemsfunny:{name:'Pegasus',url:'https://seemsfunny21.github.io/seemsfunny/'}
-      });
-      const viewer=document.getElementById('viewer');
-      const host=document.getElementById('frameHost');
-      const title=document.getElementById('viewerTitle');
-      const external=document.getElementById('viewerExternal');
-      const loader=document.getElementById('viewerLoading');
-      const loadingTitle=document.getElementById('loadingTitle');
-      const goBack=document.getElementById('viewerBack');
-      const frames=new Map();
-      const ready=new Set();
-      let current=null;
-      let warningTimer=null;
-
-      function prepare(key){
-        if(!APPS[key] || frames.has(key))return frames.get(key);
-        const frame=document.createElement('iframe');
-        frame.className='app-frame';
-        frame.title=APPS[key].name;
-        frame.setAttribute('allow','geolocation; camera; microphone; clipboard-read; clipboard-write; fullscreen');
-        frame.setAttribute('loading','eager');
-        frame.referrerPolicy='strict-origin-when-cross-origin';
-        frame.addEventListener('load',()=>{
-          ready.add(key);
-          if(current===key){loader.hidden=true;}
-        });
-        frame.src=APPS[key].url;
-        frames.set(key,frame);
-        host.insertBefore(frame,loader);
-        return frame;
-      }
-
-      function show(key,addHistory){
-        if(!APPS[key])return;
-        current=key;
-        title.textContent=APPS[key].name;
-        external.href=APPS[key].url;
-        const frame=prepare(key);
-        for(const [id,node] of frames)node.classList.toggle('is-active',id===key);
-        loader.hidden=ready.has(key);
-        loadingTitle.textContent='Άνοιγμα '+APPS[key].name+'…';
-        viewer.removeAttribute('inert');
-        viewer.classList.add('is-open');
-        viewer.setAttribute('aria-hidden','false');
-        document.querySelector('.shell').setAttribute('inert','');
-        if(addHistory)history.pushState({launcherApp:key},'', '?app='+encodeURIComponent(key));
-        if(warningTimer)clearTimeout(warningTimer);
-        if(!ready.has(key)){
-          warningTimer=setTimeout(()=>{
-            if(current===key&&!ready.has(key)){
-              loadingTitle.textContent='Η φόρτωση καθυστερεί. Μπορείς να δοκιμάσεις το «Browser» πάνω δεξιά.';
-            }
-          },11000);
-        }
-      }
-      function hide(){
-        current=null;
-        viewer.setAttribute('inert','');
-        // Disable every child frame BEFORE revealing the menu. Hidden frames
-        // must never receive taps, even if their CSS previously made them visible.
-        for(const frame of frames.values())frame.classList.remove('is-active');
-        viewer.classList.remove('is-open');
-        viewer.setAttribute('aria-hidden','true');
-        document.querySelector('.shell').removeAttribute('inert');
-        loader.hidden=true;
-        if(warningTimer)clearTimeout(warningTimer);
-        // Do not unload frames; returning to an app is immediate.
-      }
-
-      const tiles=document.querySelectorAll('a.tile');
-      for(const tile of tiles){
-        const key=Object.keys(APPS).find(id=>tile.href===APPS[id].url);
-        if(!key)continue;
-        tile.addEventListener('click',event=>{
-          if(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-          event.preventDefault();
-          show(key,true);
-        });
-      }
-      goBack.addEventListener('click',()=>{
-        history.replaceState(null,'',location.pathname);
-        hide();
-      });
-      window.addEventListener('popstate',event=>{
-        const key=event.state&&event.state.launcherApp;
-        if(key&&APPS[key])show(key,false);else hide();
-      });
-      const initial=new URLSearchParams(location.search).get('app');
-      if(initial&&APPS[initial]){
-        history.replaceState({launcherApp:initial},'','?app='+encodeURIComponent(initial));
-        show(initial,false);
-      }
-
-      // Stagger background warmup after the menu has painted. Do not download four
-      // expensive apps at exactly the same moment, and respect data saver.
-      if(!navigator.connection || !navigator.connection.saveData){
-        const start=()=>{
-          const warm=()=>{
-            const ids=['voltes','douleia','reminder','seemsfunny'];
-            ids.forEach((key,index)=>setTimeout(()=>{
-              if(!frames.has(key) && document.visibilityState==='visible')prepare(key);
-            },index*950));
-          };
-          if('requestIdleCallback' in window)requestIdleCallback(warm,{timeout:1600});
-          else setTimeout(warm,500);
-        };
-        if(document.readyState==='complete')start();
-        else window.addEventListener('load',start,{once:true});
-      }
-    })();
-  </script>
+    const frame=createFrame(key);
+    for(const [id,item] of frames){
+      const active=id===key;
+      item.classList.toggle('active',active);
+      if(active)item.removeAttribute('inert');
+      else item.setAttribute('inert','');
+      item.setAttribute('aria-hidden',active?'false':'true');
+    }
+    loading.hidden=ready.has(key);
+    if(!loading.hidden)loading.textContent='Άνοιγμα '+apps[key].name+'…';
+  }
+  tabs.forEach(tab=>tab.addEventListener('click',()=>select(tab.dataset.app)));
+  const first=new URLSearchParams(location.search).get('app');
+  select(apps[first]?first:'voltes');
+  // Avoid keeping every app active on screen. Preload sequentially, in idle time,
+  // and stop warm-up when the page is hidden or the connection requests data saving.
+  function warm(){
+    if(warmupStarted)return;
+    warmupStarted=true;
+    if(navigator.connection&&navigator.connection.saveData)return;
+    const order=['voltes','douleia','reminder','seemsfunny'];
+    order.forEach((key,i)=>setTimeout(()=>{
+      if(document.visibilityState!=='visible'||frames.has(key))return;
+      const frame=createFrame(key);
+      if(current!==key){frame.classList.remove('active');frame.setAttribute('inert','');frame.setAttribute('aria-hidden','true');}
+    },900+i*1250));
+  }
+  window.addEventListener('load',()=>{
+    if('requestIdleCallback' in window)requestIdleCallback(warm,{timeout:1800});
+    else setTimeout(warm,500);
+    if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});
+  },{once:true});
+})();
+</script>
 </body>
 </html>
