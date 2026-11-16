@@ -367,7 +367,6 @@
 
       function show(key,addHistory){
         if(!APPS[key])return;
-        const previous=current;
         current=key;
         title.textContent=APPS[key].name;
         external.href=APPS[key].url;
@@ -409,11 +408,8 @@
         });
       }
       goBack.addEventListener('click',()=>{
-        if(history.state&&history.state.launcherApp){history.back();}
-        else{
-          history.replaceState(null,'',location.pathname);
-          hide();
-        }
+        history.replaceState(null,'',location.pathname);
+        hide();
       });
       window.addEventListener('popstate',event=>{
         const key=event.state&&event.state.launcherApp;
