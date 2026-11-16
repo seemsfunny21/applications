@@ -2,55 +2,186 @@
 <html lang="el">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#071426">
-  <meta name="description" content="Οι τέσσερις εφαρμογές μου σε μία αρχική οθόνη.">
+  <meta name="description" content="Τέσσερις εφαρμογές. Ένα άγγιγμα.">
   <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Οι εφαρμογές μου">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
   <title>Οι εφαρμογές μου</title>
   <style>
-  :root{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color-scheme:dark;--bg:#071426;--border:rgba(142,189,255,.22);--text:#f5f9ff}
-  *{box-sizing:border-box}
-  html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
-  body{background:var(--bg);color:var(--text)}
-  main{height:100vh;height:100dvh;width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:clamp(8px,2vw,14px);padding:calc(10px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) calc(10px + env(safe-area-inset-left,0px))}
-  a.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.8vh,24px);min-width:0;min-height:0;overflow:hidden;border-radius:clamp(17px,4vw,28px);border:1px solid var(--border);background:linear-gradient(160deg,#16395f,#0d2440 85%);box-shadow:inset 0 1px rgba(255,255,255,.075),0 8px 20px #0005;text-decoration:none;color:var(--text);text-align:center;-webkit-tap-highlight-color:transparent;transition:transform .16s,filter .16s}
-  a.tile:before{content:"";position:absolute;width:85%;aspect-ratio:1;top:-30%;left:5%;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 67%);opacity:.22;pointer-events:none}
-  a.tile:active{transform:scale(.975);filter:brightness(1.16)}
-  a.tile:focus-visible{outline:3px solid #add5ff;outline-offset:-6px}
-  .symbol{display:grid;place-items:center;position:relative;width:clamp(64px,19vw,118px);height:clamp(64px,19vw,118px);border-radius:30%;background:linear-gradient(140deg,#ffffff22,#ffffff08);border:1px solid #ffffff29;box-shadow:inset 0 1px #ffffff1f,0 14px 38px #0005}
-  .symbol svg{width:57%;height:57%;stroke:var(--accent);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;fill:none;filter:drop-shadow(0 0 10px var(--glow))}
-  .name{position:relative;max-width:100%;padding:0 4px;font-weight:800;font-size:clamp(16px,3.9vw,24px);line-height:1.15;letter-spacing:-.025em;overflow-wrap:anywhere;text-shadow:0 2px 8px #0008}
-  .bike{--accent:#64e3a8;--glow:#0dc878}
-  .routes{--accent:#79c2ff;--glow:#1688f8}
-  .reminders{--accent:#ffd274;--glow:#fab02b}
-  .pegasus{--accent:#dcacff;--glow:#9f5dff}
-  @media(min-width:700px){main{max-width:740px;margin:auto;padding:18px}}
-  @media(max-height:390px){a.tile{gap:5px}.symbol{height:48px;width:48px;border-radius:15px}.name{font-size:14px}}
-  @media(prefers-reduced-motion:reduce){a.tile{transition:none}}
+    :root{
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      color-scheme:dark;--bg:#060f20;--white:#f5f9ff;--muted:#acc5e1
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+    body{
+      color:var(--white);
+      background:
+        radial-gradient(ellipse at 50% -15%,rgba(18,104,196,.27),transparent 62%),
+        radial-gradient(ellipse at 50% 110%,rgba(0,105,190,.14),transparent 60%),
+        linear-gradient(145deg,#061122,#07182b 50%,#04101f);
+    }
+    body::before{
+      content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.32;
+      background-image:linear-gradient(rgba(102,181,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(102,181,255,.045) 1px,transparent 1px);
+      background-size:36px 36px;mask-image:linear-gradient(135deg,transparent 4%,black 45%,transparent 98%);
+    }
+    .dashboard{
+      position:relative;isolation:isolate;display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      grid-template-rows:minmax(0,1fr) minmax(0,1fr);
+      gap:clamp(9px,2.5vw,16px);
+      padding:calc(12px + env(safe-area-inset-top,0px))
+        calc(12px + env(safe-area-inset-right,0px))
+        calc(12px + env(safe-area-inset-bottom,0px))
+        calc(12px + env(safe-area-inset-left,0px));
+      height:100vh;height:100dvh;max-width:900px;margin:auto
+    }
+    .tile{
+      --accent:#6ddfb3;--accent-rgb:109,223,179;
+      position:relative;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;min-width:0;min-height:0;overflow:hidden;
+      border:1px solid rgba(137,189,247,.26);
+      border-radius:clamp(20px,5vw,31px);
+      color:var(--white);text-decoration:none;text-align:center;
+      background:
+        radial-gradient(ellipse at 50% 20%,rgba(var(--accent-rgb),.17) 0%,transparent 46%),
+        linear-gradient(153deg,rgba(27,61,100,.96),rgba(10,29,53,.98) 58%,rgba(7,23,46,.97));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -18px 45px #0310207a,0 8px 28px #0005;
+      -webkit-tap-highlight-color:transparent;
+      transition:transform .18s ease,filter .18s ease,border-color .18s ease;
+      animation:tile-in .48s both;
+    }
+    .tile:nth-child(2){animation-delay:.07s}
+    .tile:nth-child(3){animation-delay:.14s}
+    .tile:nth-child(4){animation-delay:.21s}
+    .tile::before{
+      content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+      background:
+        linear-gradient(130deg,rgba(255,255,255,.095),transparent 32%),
+        radial-gradient(ellipse at 50% 0%,rgba(var(--accent-rgb),.20),transparent 43%);
+    }
+    .tile::after{
+      content:"";position:absolute;bottom:0;left:19%;right:19%;height:2px;
+      background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),.9),transparent);
+      box-shadow:0 0 17px 2px rgba(var(--accent-rgb),.27);
+      pointer-events:none;
+    }
+    .tile:active{transform:scale(.972);filter:brightness(1.14)}
+    .tile:focus-visible{outline:3px solid #dbf2ff;outline-offset:-6px}
+    @media(hover:hover){.tile:hover{filter:brightness(1.12);border-color:rgba(var(--accent-rgb),.65)}}
+    .bike{--accent:#62e8b0;--accent-rgb:98,232,176}
+    .routes{--accent:#74c4ff;--accent-rgb:116,196,255}
+    .reminders{--accent:#ffc974;--accent-rgb:255,201,116}
+    .pegasus{--accent:#d6a6ff;--accent-rgb:214,166,255}
+    .corner{
+      position:absolute;top:clamp(15px,3vw,25px);left:clamp(13px,3vw,23px);
+      font-size:clamp(9px,1.9vw,11px);font-weight:800;letter-spacing:.19em;
+      color:rgba(216,235,255,.55)
+    }
+    .corner b{color:var(--accent);font-weight:850}
+    .corner-line{
+      position:absolute;top:clamp(16px,3vw,25px);right:clamp(15px,3vw,24px);
+      width:15px;height:15px;border-top:1.5px solid var(--accent);border-right:1.5px solid var(--accent);opacity:.75;
+      border-radius:0 4px 0 0
+    }
+    .content{
+      position:relative;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;width:100%;padding:26px 9px 0;gap:clamp(11px,2.4vh,19px);
+      transform:translateY(-4px)
+    }
+    .icon-halo{
+      position:relative;display:grid;place-items:center;
+      width:clamp(78px,19vw,125px);height:clamp(78px,19vw,125px);
+      border-radius:33%;
+      background:linear-gradient(148deg,rgba(var(--accent-rgb),.18),rgba(18,39,69,.82) 68%);
+      border:1px solid rgba(var(--accent-rgb),.4);
+      box-shadow:0 0 0 8px rgba(var(--accent-rgb),.035),0 0 0 17px rgba(var(--accent-rgb),.018),inset 0 1px rgba(255,255,255,.24),0 12px 32px #020911aa;
+    }
+    .icon-halo::before{content:"";position:absolute;inset:-12px;border:1px solid rgba(var(--accent-rgb),.15);border-radius:38%;pointer-events:none}
+    .icon-halo::after{content:"";position:absolute;inset:11px;border-radius:28%;background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.1),transparent 63%);pointer-events:none}
+    .app-icon{
+      width:57%;height:57%;position:relative;z-index:1;
+      stroke:var(--accent);stroke-width:1.65;fill:none;stroke-linecap:round;stroke-linejoin:round;
+      filter:drop-shadow(0 0 8px rgba(var(--accent-rgb),.55))
+    }
+    .texts{display:grid;gap:clamp(5px,1vh,9px);justify-items:center;min-width:0}
+    .name{font-size:clamp(16px,4.2vw,26px);font-weight:850;line-height:1.12;letter-spacing:-.035em;text-shadow:0 3px 15px #0008;overflow-wrap:anywhere}
+    .subtitle{font-size:clamp(9px,2.45vw,12px);letter-spacing:.018em;color:#d1e3f5;opacity:.82;line-height:1.3}
+    .launch{
+      position:absolute;bottom:clamp(16px,3.4vh,31px);
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      color:var(--accent);font-size:clamp(9px,2.2vw,11px);
+      font-weight:800;letter-spacing:.15em;opacity:.95
+    }
+    .launch svg{width:13px;height:13px;stroke-width:2;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .hub{
+      position:absolute;top:50%;left:50%;z-index:5;pointer-events:none;
+      width:44px;height:44px;display:grid;place-items:center;transform:translate(-50%,-50%) rotate(45deg);
+      border-radius:12px;background:linear-gradient(150deg,#16416a,#081a33);
+      border:1px solid rgba(142,202,255,.45);
+      box-shadow:0 0 0 6px #07162bcc,0 0 25px rgba(23,133,245,.22),inset 0 1px rgba(255,255,255,.2)
+    }
+    .hub svg{width:21px;height:21px;transform:rotate(-45deg);stroke:#b7e0ff;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    @keyframes tile-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:360px){.subtitle{font-size:9px}.corner{letter-spacing:.12em}.icon-halo{width:72px;height:72px}.content{gap:12px}.launch{bottom:13px}}
+    @media(max-height:610px){
+      .content{gap:7px;padding-top:13px;transform:translateY(-5px)}
+      .icon-halo{width:clamp(57px,13vh,78px);height:clamp(57px,13vh,78px)}
+      .subtitle{display:none}
+      .launch{bottom:10px}
+      .corner{top:12px}
+    }
+    @media(max-height:400px){.icon-halo{width:48px;height:48px}.name{font-size:15px}.launch{font-size:8px}.hub{width:30px;height:30px;border-radius:8px}}
+    @media(prefers-reduced-motion:reduce){.tile{animation:none;transition:none}}
   </style>
 </head>
 <body>
-<main aria-label="Οι εφαρμογές μου">
-  <a class="tile bike" href="https://seemsfunny21.github.io/voltes/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Ποδηλασίας">
-    <span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="m5.5 17.5 5-10 5 10h-10l4.2-7.8M15.5 17.5l3-8h-3M8.8 7.5h3M16.5 6.5h2"/></svg></span><span class="name">Ποδηλασία</span>
-  </a>
-  <a class="tile routes" href="https://seemsfunny21.github.io/douleia/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Δρομολογίων">
-    <span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7M3 17h2M14 17h2"/><circle cx="8" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 9h5M6 12h4"/></svg></span><span class="name">Δρομολόγια</span>
-  </a>
-  <a class="tile reminders" href="https://seemsfunny21.github.io/reminder/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Υπενθυμίσεων">
-    <span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 6-3 7-3 9h18c0-2-3-3-3-9M10 21h4"/></svg></span><span class="name">Υπενθυμίσεις</span>
-  </a>
-  <a class="tile pegasus" href="https://seemsfunny21.github.io/seemsfunny/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Pegasus">
-    <span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 7 11 11M5 4 2 7l5 5 3-3M19 20l3-3-5-5-3 3M18 4 7 15M19 3l3 3-5 5-3-3M5 20l-3-3 5-5 3 3"/></svg></span><span class="name">Pegasus</span>
-  </a>
-</main>
-<script>
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{}));}
-</script>
-</body></html>
+  <main class="dashboard" aria-label="Οι εφαρμογές μου">
+    <a class="tile bike" href="https://seemsfunny21.github.io/voltes/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Ποδηλασίας">
+      <span class="corner"><b>01</b> / VOLTES</span><span class="corner-line" aria-hidden="true"></span>
+      <span class="content">
+        <span class="icon-halo" aria-hidden="true"><svg class="app-icon" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="m5.5 17.5 5-10 5 10h-10l4.2-7.8M15.5 17.5l3-8h-3M8.8 7.5h3M16.5 6.5h2"/></svg></span>
+        <span class="texts"><span class="name">Ποδηλασία</span><span class="subtitle">Η παρέα &amp; οι διαδρομές</span></span>
+      </span>
+      <span class="launch">ΑΝΟΙΓΜΑ <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16 16 4M6 4h10v10"/></svg></span>
+    </a>
+    <a class="tile routes" href="https://seemsfunny21.github.io/douleia/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Δρομολογίων">
+      <span class="corner"><b>02</b> / WORK</span><span class="corner-line" aria-hidden="true"></span>
+      <span class="content">
+        <span class="icon-halo" aria-hidden="true"><svg class="app-icon" viewBox="0 0 24 24"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7M3 17h2M14 17h2"/><circle cx="8" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 9h5M6 12h4"/></svg></span>
+        <span class="texts"><span class="name">Δρομολόγια</span><span class="subtitle">Ώρες &amp; αφίξεις</span></span>
+      </span>
+      <span class="launch">ΑΝΟΙΓΜΑ <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16 16 4M6 4h10v10"/></svg></span>
+    </a>
+    <a class="tile reminders" href="https://seemsfunny21.github.io/reminder/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Υπενθυμίσεων">
+      <span class="corner"><b>03</b> / NOTES</span><span class="corner-line" aria-hidden="true"></span>
+      <span class="content">
+        <span class="icon-halo" aria-hidden="true"><svg class="app-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 6-3 7-3 9h18c0-2-3-3-3-9M10 21h4"/></svg></span>
+        <span class="texts"><span class="name">Υπενθυμίσεις</span><span class="subtitle">Η καθημερινή οργάνωση</span></span>
+      </span>
+      <span class="launch">ΑΝΟΙΓΜΑ <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16 16 4M6 4h10v10"/></svg></span>
+    </a>
+    <a class="tile pegasus" href="https://seemsfunny21.github.io/seemsfunny/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Pegasus">
+      <span class="corner"><b>04</b> / FITNESS</span><span class="corner-line" aria-hidden="true"></span>
+      <span class="content">
+        <span class="icon-halo" aria-hidden="true"><svg class="app-icon" viewBox="0 0 24 24"><path d="m6 7 11 11M5 4 2 7l5 5 3-3M19 20l3-3-5-5-3 3M18 4 7 15M19 3l3 3-5 5-3-3M5 20l-3-3 5-5-3 3"/></svg></span>
+        <span class="texts"><span class="name">Pegasus</span><span class="subtitle">Προπόνηση &amp; στόχοι</span></span>
+      </span>
+      <span class="launch">ΑΝΟΙΓΜΑ <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16 16 4M6 4h10v10"/></svg></span>
+    </a>
+    <div class="hub" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2.1 7.9L22 12l-7.9 2.1L12 22l-2.1-7.9L2 12l7.9-2.1L12 2Z"/></svg></div>
+  </main>
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+    }
+  </script>
+</body>
+</html>
