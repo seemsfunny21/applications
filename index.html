@@ -4,183 +4,269 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#071426">
-  <meta name="description" content="Τέσσερις εφαρμογές. Ένα άγγιγμα.">
   <meta name="color-scheme" content="dark">
+  <meta name="description" content="Οι εφαρμογές μου — τέσσερις εφαρμογές, ένα άγγιγμα.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Οι εφαρμογές μου">
-  <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icon-192.png">
   <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon-192.png">
   <title>Οι εφαρμογές μου</title>
   <style>
-    :root{
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-      color-scheme:dark;--bg:#060f20;--white:#f5f9ff;--muted:#acc5e1
+    :root {
+      font-family: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      color-scheme: dark;
+      --bg: #071426;
+      --text: #f6faff;
+      --muted: #a9bed6;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;width:100%;margin:0;overflow:hidden;overscroll-behavior:none}
-    body{
-      color:var(--white);
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; }
+    html { background: var(--bg); }
+    body {
+      color: var(--text);
+      overflow: hidden;
       background:
-        radial-gradient(ellipse at 50% -15%,rgba(18,104,196,.27),transparent 62%),
-        radial-gradient(ellipse at 50% 110%,rgba(0,105,190,.14),transparent 60%),
-        linear-gradient(145deg,#061122,#07182b 50%,#04101f);
+        radial-gradient(ellipse 80% 40% at 50% 4%, #15427875, transparent 80%),
+        radial-gradient(ellipse 70% 45% at 100% 100%, #17498755, transparent 80%),
+        linear-gradient(160deg,#050f1e,#091b31 58%,#061222);
+      -webkit-tap-highlight-color: transparent;
     }
-    body::before{
-      content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.32;
-      background-image:linear-gradient(rgba(102,181,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(102,181,255,.045) 1px,transparent 1px);
-      background-size:36px 36px;mask-image:linear-gradient(135deg,transparent 4%,black 45%,transparent 98%);
+    .aura {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(44px);
+      opacity: .44;
+      pointer-events: none;
+      z-index: 0;
+      animation: drift 15s ease-in-out infinite alternate;
     }
-    .dashboard{
-      position:relative;isolation:isolate;display:grid;
-      grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-      grid-template-rows:minmax(0,1fr) minmax(0,1fr);
-      gap:clamp(9px,2.5vw,16px);
-      padding:calc(12px + env(safe-area-inset-top,0px))
-        calc(12px + env(safe-area-inset-right,0px))
-        calc(12px + env(safe-area-inset-bottom,0px))
-        calc(12px + env(safe-area-inset-left,0px));
-      height:100vh;height:100dvh;max-width:900px;margin:auto
+    .aura.one { width: 280px; height: 280px; top: 9%; left: -135px; background: #1264ab; }
+    .aura.two { width: 280px; height: 280px; right: -140px; bottom: 8%; background: #254c9f; animation-delay: -7s; }
+    .shell {
+      position: relative;
+      isolation: isolate;
+      z-index: 1;
+      width: min(100%,560px);
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: auto;
+      padding: calc(env(safe-area-inset-top,0px) + 24px) 17px calc(env(safe-area-inset-bottom,0px) + 19px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(21px,4vh,34px);
     }
-    .tile{
-      --accent:#6ddfb3;--accent-rgb:109,223,179;
-      position:relative;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;min-width:0;min-height:0;overflow:hidden;
-      border:1px solid rgba(137,189,247,.26);
-      border-radius:clamp(20px,5vw,31px);
-      color:var(--white);text-decoration:none;text-align:center;
-      background:
-        radial-gradient(ellipse at 50% 20%,rgba(var(--accent-rgb),.17) 0%,transparent 46%),
-        linear-gradient(153deg,rgba(27,61,100,.96),rgba(10,29,53,.98) 58%,rgba(7,23,46,.97));
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -18px 45px #0310207a,0 8px 28px #0005;
-      -webkit-tap-highlight-color:transparent;
-      transition:transform .18s ease,filter .18s ease,border-color .18s ease;
-      animation:tile-in .48s both;
+    .heading { text-align: center; display:grid; justify-items:center; gap:9px; }
+    .eyebrow { font-size: 10px; font-weight: 800; letter-spacing: .3em; color:#70bafa; }
+    .heading h1 {
+      margin: 0;
+      font-weight: 800;
+      font-size: clamp(24px,6.4vw,32px);
+      line-height: 1.2;
+      letter-spacing: -.045em;
     }
-    .tile:nth-child(2){animation-delay:.07s}
-    .tile:nth-child(3){animation-delay:.14s}
-    .tile:nth-child(4){animation-delay:.21s}
-    .tile::before{
-      content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-      background:
-        linear-gradient(130deg,rgba(255,255,255,.095),transparent 32%),
-        radial-gradient(ellipse at 50% 0%,rgba(var(--accent-rgb),.20),transparent 43%);
+    .heading p { margin:0; color:var(--muted); font-size: 13px; }
+    .sparkle {
+      display:inline-block;
+      width: 9px; height: 9px;
+      background:#78c4ff;
+      border-radius: 3px;
+      transform: rotate(45deg);
+      box-shadow:0 0 16px #5caeffaa;
+      animation:twinkle 3.5s ease-in-out infinite;
+      margin-bottom:4px;
     }
-    .tile::after{
-      content:"";position:absolute;bottom:0;left:19%;right:19%;height:2px;
-      background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),.9),transparent);
-      box-shadow:0 0 17px 2px rgba(var(--accent-rgb),.27);
+    .cards-wrap { position:relative; width:min(100%, 376px); }
+    .orbit {
+      position: absolute;
+      z-index: -1;
+      width: 275px;
+      height: 275px;
+      border: 1px solid rgba(125,184,251,.15);
+      box-shadow: 0 0 35px #2464b113,inset 0 0 45px #2464b10b;
+      border-radius: 50%;
+      top: 50%;left:50%;
+      transform:translate(-50%,-50%);
       pointer-events:none;
     }
-    .tile:active{transform:scale(.972);filter:brightness(1.14)}
-    .tile:focus-visible{outline:3px solid #dbf2ff;outline-offset:-6px}
-    @media(hover:hover){.tile:hover{filter:brightness(1.12);border-color:rgba(var(--accent-rgb),.65)}}
-    .bike{--accent:#62e8b0;--accent-rgb:98,232,176}
-    .routes{--accent:#74c4ff;--accent-rgb:116,196,255}
-    .reminders{--accent:#ffc974;--accent-rgb:255,201,116}
-    .pegasus{--accent:#d6a6ff;--accent-rgb:214,166,255}
-    .corner{
-      position:absolute;top:clamp(15px,3vw,25px);left:clamp(13px,3vw,23px);
-      font-size:clamp(9px,1.9vw,11px);font-weight:800;letter-spacing:.19em;
-      color:rgba(216,235,255,.55)
+    .orbit::after {
+      content:"";
+      position:absolute;inset:-18px;border-radius:50%;
+      border:1px dashed rgba(130,189,244,.1);
+      animation:orbit 45s linear infinite;
     }
-    .corner b{color:var(--accent);font-weight:850}
-    .corner-line{
-      position:absolute;top:clamp(16px,3vw,25px);right:clamp(15px,3vw,24px);
-      width:15px;height:15px;border-top:1.5px solid var(--accent);border-right:1.5px solid var(--accent);opacity:.75;
-      border-radius:0 4px 0 0
+    .cards {
+      display:grid;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+      gap: 14px;
+      width:100%;
     }
-    .content{
-      position:relative;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;width:100%;padding:26px 9px 0;gap:clamp(11px,2.4vh,19px);
-      transform:translateY(-4px)
+    .tile {
+      --rgb: 116,196,255;
+      --accent: #74c4ff;
+      min-width:0;
+      min-height: 157px;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 11px;
+      padding: 15px 9px 14px;
+      overflow:hidden;
+      border-radius:22px;
+      border:1px solid rgba(143,196,251,.25);
+      text-decoration:none;
+      text-align:center;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(var(--rgb),.18),transparent 65%),
+        linear-gradient(160deg,rgba(26,58,91,.9),rgba(11,30,53,.93));
+      box-shadow:inset 0 1px 0 #ffffff16,0 10px 27px #0005;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter:blur(15px);
+      transition:transform .18s ease,filter .18s ease,border-color .18s ease;
+      animation: card-enter .55s both;
     }
-    .icon-halo{
-      position:relative;display:grid;place-items:center;
-      width:clamp(78px,19vw,125px);height:clamp(78px,19vw,125px);
-      border-radius:33%;
-      background:linear-gradient(148deg,rgba(var(--accent-rgb),.18),rgba(18,39,69,.82) 68%);
-      border:1px solid rgba(var(--accent-rgb),.4);
-      box-shadow:0 0 0 8px rgba(var(--accent-rgb),.035),0 0 0 17px rgba(var(--accent-rgb),.018),inset 0 1px rgba(255,255,255,.24),0 12px 32px #020911aa;
+    .tile:nth-child(2) { animation-delay:.09s; }
+    .tile:nth-child(3) { animation-delay:.18s; }
+    .tile:nth-child(4) { animation-delay:.27s; }
+    .tile::before {
+      content:"";
+      position:absolute;top:0;left:22%;right:22%;height:2px;
+      background:linear-gradient(90deg,transparent,rgba(var(--rgb),.9),transparent);
+      box-shadow:0 0 19px rgba(var(--rgb),.45);
     }
-    .icon-halo::before{content:"";position:absolute;inset:-12px;border:1px solid rgba(var(--accent-rgb),.15);border-radius:38%;pointer-events:none}
-    .icon-halo::after{content:"";position:absolute;inset:11px;border-radius:28%;background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.1),transparent 63%);pointer-events:none}
-    .app-icon{
-      width:57%;height:57%;position:relative;z-index:1;
-      stroke:var(--accent);stroke-width:1.65;fill:none;stroke-linecap:round;stroke-linejoin:round;
-      filter:drop-shadow(0 0 8px rgba(var(--accent-rgb),.55))
+    .tile::after {
+      content:"";
+      position:absolute;inset:0;
+      pointer-events:none;
+      background:linear-gradient(130deg,#ffffff0d,transparent 36%);
     }
-    .texts{display:grid;gap:clamp(5px,1vh,9px);justify-items:center;min-width:0}
-    .name{font-size:clamp(16px,4.2vw,26px);font-weight:850;line-height:1.12;letter-spacing:-.035em;text-shadow:0 3px 15px #0008;overflow-wrap:anywhere}
-    .subtitle{font-size:clamp(9px,2.45vw,12px);letter-spacing:.018em;color:#d1e3f5;opacity:.82;line-height:1.3}
-    .launch{
-      position:absolute;bottom:clamp(16px,3.4vh,31px);
-      display:flex;align-items:center;justify-content:center;gap:8px;
-      color:var(--accent);font-size:clamp(9px,2.2vw,11px);
-      font-weight:800;letter-spacing:.15em;opacity:.95
+    .tile:focus-visible { outline:3px solid #cde9ff; outline-offset:3px; }
+    .tile:active { transform:scale(.95);filter:brightness(1.18); }
+    @media(hover:hover) {
+      .tile:hover { transform:translateY(-5px);border-color:rgba(var(--rgb),.75);filter:brightness(1.12); }
     }
-    .launch svg{width:13px;height:13px;stroke-width:2;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
-    .hub{
-      position:absolute;top:50%;left:50%;z-index:5;pointer-events:none;
-      width:44px;height:44px;display:grid;place-items:center;transform:translate(-50%,-50%) rotate(45deg);
-      border-radius:12px;background:linear-gradient(150deg,#16416a,#081a33);
-      border:1px solid rgba(142,202,255,.45);
-      box-shadow:0 0 0 6px #07162bcc,0 0 25px rgba(23,133,245,.22),inset 0 1px rgba(255,255,255,.2)
+    .cycling { --accent:#60e5b2; --rgb:96,229,178; }
+    .routes { --accent:#72c3ff; --rgb:114,195,255; }
+    .reminders { --accent:#ffca7d; --rgb:255,202,125; }
+    .pegasus { --accent:#d5a4ff; --rgb:213,164,255; }
+    .glyph {
+      width:59px;height:59px;
+      flex:none;
+      display:grid;place-items:center;
+      position:relative;
+      background:linear-gradient(150deg,rgba(var(--rgb),.20),rgba(var(--rgb),.055));
+      border:1px solid rgba(var(--rgb),.33);
+      box-shadow:inset 0 1px 0 #ffffff1c,0 0 26px rgba(var(--rgb),.10);
+      border-radius:19px;
+      animation:levitate 4.3s ease-in-out infinite;
     }
-    .hub svg{width:21px;height:21px;transform:rotate(-45deg);stroke:#b7e0ff;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
-    @keyframes tile-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
-    @media(max-width:360px){.subtitle{font-size:9px}.corner{letter-spacing:.12em}.icon-halo{width:72px;height:72px}.content{gap:12px}.launch{bottom:13px}}
-    @media(max-height:610px){
-      .content{gap:7px;padding-top:13px;transform:translateY(-5px)}
-      .icon-halo{width:clamp(57px,13vh,78px);height:clamp(57px,13vh,78px)}
-      .subtitle{display:none}
-      .launch{bottom:10px}
-      .corner{top:12px}
+    .tile:nth-child(2) .glyph { animation-delay:-1.15s; }
+    .tile:nth-child(3) .glyph { animation-delay:-2.35s; }
+    .tile:nth-child(4) .glyph { animation-delay:-3.3s; }
+    .glyph svg {
+      width:35px;height:35px;
+      fill:none;stroke:var(--accent);stroke-width:1.75;
+      stroke-linecap:round;stroke-linejoin:round;
+      filter:drop-shadow(0 0 6px rgba(var(--rgb),.36));
     }
-    @media(max-height:400px){.icon-halo{width:48px;height:48px}.name{font-size:15px}.launch{font-size:8px}.hub{width:30px;height:30px;border-radius:8px}}
-    @media(prefers-reduced-motion:reduce){.tile{animation:none;transition:none}}
+    .name {
+      font-size:clamp(15px,4.2vw,18px);
+      font-weight:800;
+      letter-spacing:-.027em;
+      line-height:1.12;
+      overflow-wrap:anywhere;
+    }
+    .desc { font-size:clamp(10px,2.6vw,11px);color:#b8cee5;line-height:1.28; }
+    .footer {
+      display:flex;align-items:center;gap:8px;
+      font-size:10px;
+      letter-spacing:.14em;
+      font-weight:700;
+      color:#7795b5;
+      text-transform:uppercase;
+      text-align:center;
+    }
+    .footer::before,.footer::after {
+      content:"";width:19px;height:1px;background:#496b8b;
+    }
+    @keyframes card-enter { from{opacity:0;transform:translateY(15px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)} }
+    @keyframes levitate {0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+    @keyframes twinkle {0%,100%{opacity:.5;box-shadow:0 0 8px #5caeff66}50%{opacity:1;box-shadow:0 0 18px #5caeffcc}}
+    @keyframes drift {from{transform:translate(-15px,-18px)}to{transform:translate(42px,28px)}}
+    @keyframes orbit {to{transform:rotate(360deg)}}
+    @media(max-width:350px) {
+      .cards{gap:11px}
+      .tile{min-height:144px;border-radius:19px;gap:8px}
+      .glyph{width:53px;height:53px;border-radius:16px}
+      .glyph svg{width:32px;height:32px}
+      .name{font-size:14px}
+    }
+    @media(max-height:630px){
+      .shell{gap:16px;padding-top:12px;padding-bottom:12px}
+      .heading{gap:5px}
+      .heading h1{font-size:23px}
+      .heading p{font-size:11px}
+      .tile{min-height:127px;gap:7px;padding:10px 8px}
+      .glyph{width:48px;height:48px;border-radius:15px}
+      .glyph svg{width:30px;height:30px}
+      .desc{font-size:10px}
+      .footer{font-size:9px}
+    }
+    @media(max-height:450px){
+      body{overflow:auto}
+      .shell{min-height:450px}
+    }
+    @media(prefers-reduced-motion:reduce) {
+      *,*::before,*::after{animation:none!important;transition:none!important}
+    }
   </style>
 </head>
 <body>
-  <main class="dashboard" aria-label="Οι εφαρμογές μου">
-    <a class="tile bike" href="https://seemsfunny21.github.io/voltes/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Ποδηλασίας">
-      <span class="corner"><b>01</b> / VOLTES</span><span class="corner-line" aria-hidden="true"></span>
-      <span class="content">
-        <span class="icon-halo" aria-hidden="true"><svg class="app-icon" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="m5.5 17.5 5-10 5 10h-10l4.2-7.8M15.5 17.5l3-8h-3M8.8 7.5h3M16.5 6.5h2"/></svg></span>
-        <span class="texts"><span class="name">Ποδηλασία</span><span class="subtitle">Η παρέα &amp; οι διαδρομές</span></span>
-      </span>
-      <span class="launch">ΑΝΟΙΓΜΑ <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16 16 4M6 4h10v10"/></svg></span>
-    </a>
-    <a class="tile routes" href="https://seemsfunny21.github.io/douleia/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Δρομολογίων">
-      <span class="corner"><b>02</b> / WORK</span><span class="corner-line" aria-hidden="true"></span>
-      <span class="content">
-        <span class="icon-halo" aria-hidden="true"><svg class="app-icon" viewBox="0 0 24 24"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7M3 17h2M14 17h2"/><circle cx="8" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 9h5M6 12h4"/></svg></span>
-        <span class="texts"><span class="name">Δρομολόγια</span><span class="subtitle">Ώρες &amp; αφίξεις</span></span>
-      </span>
-      <span class="launch">ΑΝΟΙΓΜΑ <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16 16 4M6 4h10v10"/></svg></span>
-    </a>
-    <a class="tile reminders" href="https://seemsfunny21.github.io/reminder/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Υπενθυμίσεων">
-      <span class="corner"><b>03</b> / NOTES</span><span class="corner-line" aria-hidden="true"></span>
-      <span class="content">
-        <span class="icon-halo" aria-hidden="true"><svg class="app-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 6-3 7-3 9h18c0-2-3-3-3-9M10 21h4"/></svg></span>
-        <span class="texts"><span class="name">Υπενθυμίσεις</span><span class="subtitle">Η καθημερινή οργάνωση</span></span>
-      </span>
-      <span class="launch">ΑΝΟΙΓΜΑ <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16 16 4M6 4h10v10"/></svg></span>
-    </a>
-    <a class="tile pegasus" href="https://seemsfunny21.github.io/seemsfunny/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Pegasus">
-      <span class="corner"><b>04</b> / FITNESS</span><span class="corner-line" aria-hidden="true"></span>
-      <span class="content">
-        <span class="icon-halo" aria-hidden="true"><svg class="app-icon" viewBox="0 0 24 24"><path d="m6 7 11 11M5 4 2 7l5 5 3-3M19 20l3-3-5-5-3 3M18 4 7 15M19 3l3 3-5 5-3-3M5 20l-3-3 5-5-3 3"/></svg></span>
-        <span class="texts"><span class="name">Pegasus</span><span class="subtitle">Προπόνηση &amp; στόχοι</span></span>
-      </span>
-      <span class="launch">ΑΝΟΙΓΜΑ <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16 16 4M6 4h10v10"/></svg></span>
-    </a>
-    <div class="hub" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2.1 7.9L22 12l-7.9 2.1L12 22l-2.1-7.9L2 12l7.9-2.1L12 2Z"/></svg></div>
+  <div class="aura one" aria-hidden="true"></div>
+  <div class="aura two" aria-hidden="true"></div>
+  <main class="shell">
+    <header class="heading">
+      <span class="sparkle" aria-hidden="true"></span>
+      <span class="eyebrow">MY APPS</span>
+      <h1>Οι εφαρμογές μου</h1>
+      <p>Όλα σε ένα σημείο, με ένα άγγιγμα.</p>
+    </header>
+    <div class="cards-wrap">
+      <div class="orbit" aria-hidden="true"></div>
+      <nav class="cards" aria-label="Επιλογή εφαρμογής">
+        <a class="tile cycling" href="https://seemsfunny21.github.io/voltes/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Ποδηλασίας">
+          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="m5.5 17.5 5-10 5 10h-10l4.2-7.8M15.5 17.5l3-8h-3M8.8 7.5h3M16.5 6.5h2"/></svg></span>
+          <span class="name">Ποδηλασία</span>
+          <span class="desc">Βόλτες &amp; διαδρομές</span>
+        </a>
+        <a class="tile routes" href="https://seemsfunny21.github.io/douleia/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Δρομολογίων">
+          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7M3 17h2M14 17h2"/><circle cx="8" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 9h5M6 12h4"/></svg></span>
+          <span class="name">Δρομολόγια</span>
+          <span class="desc">Ώρες &amp; οδηγοί</span>
+        </a>
+        <a class="tile reminders" href="https://seemsfunny21.github.io/reminder/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Υπενθυμίσεων">
+          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 6-3 7-3 9h18c0-2-3-3-3-9M10 21h4"/></svg></span>
+          <span class="name">Υπενθυμίσεις</span>
+          <span class="desc">Καθημερινή οργάνωση</span>
+        </a>
+        <a class="tile pegasus" href="https://seemsfunny21.github.io/seemsfunny/" target="_blank" rel="noopener noreferrer" aria-label="Άνοιγμα Pegasus">
+          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 7 11 11M5 4 2 7l5 5 3-3M19 20l3-3-5-5-3 3M18 4 7 15M19 3l3 3-5 5-3-3M5 20l-3-3 5-5 3 3"/></svg></span>
+          <span class="name">Pegasus</span>
+          <span class="desc">Προπόνηση &amp; στόχοι</span>
+        </a>
+      </nav>
+    </div>
+    <footer class="footer">Your personal space</footer>
   </main>
   <script>
-    if('serviceWorker' in navigator){
-      window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{}));
     }
   </script>
 </body>
