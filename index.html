@@ -254,7 +254,8 @@
     .viewer-external{font-size:11px;padding:0 8px}
     .frame-host{position:relative;flex:1;min-height:0;background:#061426}
     .app-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#071426;opacity:0;visibility:hidden;pointer-events:none}
-    .app-frame.is-active{opacity:1;visibility:visible;pointer-events:auto}
+    .viewer.is-open .app-frame.is-active{opacity:1;visibility:visible;pointer-events:auto}
+    .viewer:not(.is-open) .app-frame{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
     .viewer-loading{position:absolute;inset:0;display:grid;place-items:center;gap:12px;text-align:center;color:#bdd5ee;font-size:13px;background:#071426;pointer-events:none}
     .viewer-loading[hidden]{display:none}
     .viewer-spinner{height:35px;width:35px;margin:0 auto 14px;border-radius:50%;border:3px solid #2b4f71;border-top-color:#85caff;animation:spin .8s linear infinite}
@@ -302,7 +303,7 @@
     <footer class="footer">Your personal space</footer>
   </main>
 
-  <section class="viewer" id="viewer" aria-label="Ανοιχτή εφαρμογή" aria-hidden="true">
+  <section class="viewer" id="viewer" aria-label="Ανοιχτή εφαρμογή" aria-hidden="true" inert>
     <div class="viewer-bar">
       <button type="button" class="viewer-back" id="viewerBack" aria-label="Πίσω στις εφαρμογές">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7"/></svg> Εφαρμογές
@@ -374,6 +375,7 @@
         for(const [id,node] of frames)node.classList.toggle('is-active',id===key);
         loader.hidden=ready.has(key);
         loadingTitle.textContent='Άνοιγμα '+APPS[key].name+'…';
+        viewer.removeAttribute('inert');
         viewer.classList.add('is-open');
         viewer.setAttribute('aria-hidden','false');
         document.querySelector('.shell').setAttribute('inert','');
@@ -389,6 +391,10 @@
       }
       function hide(){
         current=null;
+        viewer.setAttribute('inert','');
+        // Disable every child frame BEFORE revealing the menu. Hidden frames
+        // must never receive taps, even if their CSS previously made them visible.
+        for(const frame of frames.values())frame.classList.remove('is-active');
         viewer.classList.remove('is-open');
         viewer.setAttribute('aria-hidden','true');
         document.querySelector('.shell').removeAttribute('inert');
