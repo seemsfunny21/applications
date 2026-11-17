@@ -41,6 +41,17 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 }
 .tab:focus-visible{outline:2px solid #a9deff;outline-offset:-3px}
 .tab:active{filter:brightness(1.2)}
+.tab{touch-action:manipulation}
+@media(hover:hover){
+ .tab:not([aria-selected="true"]):hover{
+  color:#edf8ff;background:#194166;border-color:#396b9a;
+  box-shadow:inset 0 1px rgba(255,255,255,.06);
+ }
+}
+@media(max-width:360px){
+ .tabs{gap:2px;padding-left:3px;padding-right:3px}
+ .tab{font-size:clamp(8px,2.55vw,10px);letter-spacing:-.045em;border-radius:9px}
+}
 .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#061424}
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block}
