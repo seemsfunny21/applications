@@ -83,6 +83,32 @@ const {chromium}=require('playwright');
     console.log('PASS Mobile geometry, header symmetry, and five tabs at 360/393px',JSON.stringify(phoneMetrics));
     await context.close();
 
+    // Also verify every tab at desktop width. Pegasus intentionally routes to
+    // its separate desktop dashboard; don't assume it has a mobile hero there.
+    const desktopContext=await browser.newContext({
+      viewport:{width:1366,height:900},locale:'el-GR',
+      timezoneId:'Europe/Athens',serviceWorkers:'allow'
+    });
+    const desktopPage=await desktopContext.newPage();
+    await desktopPage.goto(base+'/applications/',{waitUntil:'domcontentloaded',timeout:45000});
+    assert.equal(await desktopPage.locator('nav.tabs button.tab').count(),5);
+    for(const [key] of apps){
+      await desktopPage.locator('#tab-'+key).click();
+      const frame=desktopPage.locator('#frame-'+key);
+      await frame.waitFor({state:'visible',timeout:35000});
+      await desktopPage.frameLocator('#frame-'+key).locator('body')
+        .waitFor({state:'visible',timeout:35000});
+      assert.equal(await desktopPage.locator('iframe.app-frame.active').count(),1,
+        'One desktop app visible: '+key);
+      assert.equal(await desktopPage.locator('#tab-'+key).getAttribute('aria-selected'),
+        'true','Desktop tab state: '+key);
+    }
+    assert.equal(await desktopPage.evaluate(()=>
+      document.documentElement.scrollWidth<=document.documentElement.clientWidth+1
+    ),true,'Applications desktop launcher has no horizontal overflow');
+    console.log('PASS Five Applications tabs open in desktop Chromium without launcher overflow');
+    await desktopContext.close();
+
     // An isolated, blank phone browser with synthetic GPS; this never sees or
     // changes a person's location. Real GPS hardware cannot be tested remotely.
     const parkingContext=await browser.newContext(settings);
