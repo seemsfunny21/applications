@@ -45,6 +45,34 @@ const {chromium}=require('playwright');
     const min=Math.min(...heights.map(x=>x.height)),max=Math.max(...heights.map(x=>x.height));
     assert.ok(max-min<=3,'Five mobile headers should have a shared height: '+JSON.stringify(heights));
     console.log('PASS Five application banners load at aligned mobile heights',heights);
+
+    // All five apps were changed since the previous live test; verify actual
+    // positioning and widths, not just banner heights, at two phone sizes.
+    const phoneMetrics=[];
+    for(const width of [393,360]){
+      await page.setViewportSize({width,height:844});
+      const result=[];
+      for(const [key,selector] of apps){
+        await page.locator('#tab-'+key).click();
+        const hero=page.frameLocator('#frame-'+key).locator(selector);
+        await hero.waitFor({state:'visible',timeout:30000});
+        const box=await hero.boundingBox();
+        assert.ok(box,'Visible banner for '+key+' at '+width+'px');
+        result.push({app:key,width:+box.width.toFixed(1),
+          x:+box.x.toFixed(1),y:+box.y.toFixed(1),height:+box.height.toFixed(1)});
+      }
+      const span=k=>Math.max(...result.map(x=>x[k]))-Math.min(...result.map(x=>x[k]));
+      assert.ok(span('height')<=3,'Banner height inconsistency '+width+': '+JSON.stringify(result));
+      assert.ok(span('width')<=12,'Banner width inconsistency '+width+': '+JSON.stringify(result));
+      assert.ok(span('x')<=7,'Banner horizontal offset '+width+': '+JSON.stringify(result));
+      assert.ok(span('y')<=12,'Banner top offset '+width+': '+JSON.stringify(result));
+      const tabsFit=await page.locator('nav.tabs').evaluate(el=>
+        el.scrollWidth<=el.clientWidth+1 && Array.from(el.querySelectorAll('.tab')).every(btn=>btn.scrollWidth<=btn.clientWidth+1)
+      );
+      assert.ok(tabsFit,'Applications navigation is clipped at '+width+'px');
+      phoneMetrics.push({phoneWidth:width,align:result});
+    }
+    console.log('PASS Mobile geometry, header symmetry, and five tabs at 360/393px',JSON.stringify(phoneMetrics));
     await context.close();
 
     // An isolated, blank phone browser with synthetic GPS; this never sees or
@@ -72,7 +100,7 @@ const {chromium}=require('playwright');
       assert.equal(await parkingPage.locator('#save').isDisabled(),false);
     }
     assert.equal(await parkingPage.locator('#history-list .parking-history-item').count(),5);
-    await parkingPage.locator('#history-panel summary').click();
+    await parkingPage.locator('#history-toggle').click();
     await parkingPage.locator('#history-list .parking-history-item:last-child button').first().click();
     const captured=await parkingPage.evaluate(()=>window.__mapsOpened.at(-1));
     assert.ok(captured.includes('mlat=39.652'),'Older stored parking location opens, not current one');
