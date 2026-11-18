@@ -165,6 +165,55 @@ const {chromium}=require('playwright');
       document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),
       true,'No desktop overflow');
     console.log('PASS Games hub and all published apps in desktop Chromium');
+
+    // Check responsive application geometry on a 1920×1080 TV/PC viewport,
+    // using anonymous fresh browser storage; never mutate user data.
+    await deskPage.setViewportSize({width:1920,height:1080});
+    const desktopGeometry={};
+    for(const key of ['voltes','douleia','reminder','seemsfunny','Parking']){
+      await openApp(deskPage,key);
+      const panel=deskPage.frameLocator('#frame-'+key);
+      const measurements=await panel.locator('body').evaluate((body,key)=>{
+        const box=selector=>{
+          const e=document.querySelector(selector);
+          if(!e)return null;
+          const b=e.getBoundingClientRect();
+          return {x:Math.round(b.x),y:Math.round(b.y),w:Math.round(b.width),h:Math.round(b.height)};
+        };
+        if(key==='voltes')return {shell:box('.shell'),cards:box('.cards'),
+          cols:getComputedStyle(document.querySelector('.cards')||body).gridTemplateColumns};
+        if(key==='douleia')return {wrap:box('.wrap'),routes:box('.route-grid'),
+          cols:getComputedStyle(document.querySelector('.route-grid')||body).gridTemplateColumns};
+        if(key==='reminder')return {content:box('.content-area'),wizard:box('.wizard-half'),
+          list:box('.list-half'),cols:getComputedStyle(document.querySelector('.screen-split')).gridTemplateColumns};
+        if(key==='seemsfunny')return {list:box('.exercise-list'),video:box('.video-container'),
+          bar:box('.pegasus-control-bar')};
+        if(key==='Parking')return {shell:box('.app'),location:box('.panel'),actions:box('.actions'),
+          cols:getComputedStyle(document.querySelector('.app')).gridTemplateColumns};
+        return {};
+      },key);
+      desktopGeometry[key]=measurements;
+    }
+    assert.ok(desktopGeometry.voltes.shell?.w>=1450,
+      'Cycling dashboard must expand beyond phone width on a TV');
+    assert.ok(desktopGeometry.douleia.wrap?.w>=1400,
+      'Routes dashboard must show multi-column cards on a TV');
+    assert.equal(desktopGeometry.douleia.cols.trim().split(/\\s+/).length,3,
+      'Work routes must show three desktop columns');
+    assert.ok(desktopGeometry.reminder.wizard&&desktopGeometry.reminder.list&&
+      desktopGeometry.reminder.list.x>=desktopGeometry.reminder.wizard.x+desktopGeometry.reminder.wizard.w,
+      'Reminder editor and list must be side-by-side on desktop');
+    assert.ok(desktopGeometry.seemsfunny.list?.w>=320&&desktopGeometry.seemsfunny.video?.w>=600,
+      'Pegasus workout and video must use television screen space');
+    assert.ok(desktopGeometry.Parking.shell?.w>=1200&&
+      desktopGeometry.Parking.actions.x>=desktopGeometry.Parking.location.x+desktopGeometry.Parking.location.w,
+      'Parking buttons must sit beside the location panel on desktop');
+    const tabs=await deskPage.locator('.tab').first().evaluate(el=>({
+      font:parseFloat(getComputedStyle(el).fontSize),height:el.getBoundingClientRect().height
+    }));
+    assert.ok(tabs.font>=13&&tabs.height>=47,
+      'Applications tabs must be readable at TV distance');
+    console.log('PASS Full HD responsive layouts across 5 apps',JSON.stringify(desktopGeometry));
     await desktop.close();
 
     // An isolated, blank phone browser with synthetic GPS; this never sees or
