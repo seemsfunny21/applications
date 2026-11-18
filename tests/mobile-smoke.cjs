@@ -217,6 +217,31 @@ const {chromium}=require('playwright');
       true,'No desktop overflow');
     console.log('PASS Games hub and all published apps in desktop Chromium');
 
+    // Confirm the familiar centered proportions remain in the desktop browser.
+    await deskPage.setViewportSize({width:1920,height:1080});
+    const classic={};
+    for(const [key,selector] of [
+      ['voltes','.shell'],['douleia','.wrap'],['reminder','.screen-split'],
+      ['seemsfunny','.exercise-list'],['Parking','.app']
+    ]){
+      await openApp(deskPage,key);
+      const frame=deskPage.frameLocator('#frame-'+key);
+      const el=frame.locator(selector);
+      await el.waitFor({state:'visible',timeout:30000});
+      classic[key]=await el.boundingBox();
+    }
+    assert.ok(classic.voltes?.width<=1000,'Cycling reverts to its centered 960px layout');
+    assert.ok(classic.douleia?.width<=1100,'Work routes revert to centered 1030px layout');
+    assert.ok(classic.Parking?.width<=450,'Parking reverts to original 430px layout');
+    assert.ok(classic.seemsfunny?.width>=280&&classic.seemsfunny.width<=320,
+      'Pegasus restores its previous exercise list width');
+    await openApp(deskPage,'reminder');
+    const reminder=deskPage.frameLocator('#frame-reminder');
+    const wizard=await reminder.locator('.wizard-half').boundingBox();
+    const list=await reminder.locator('.list-half').boundingBox();
+    assert.ok(wizard&&list&&list.y>=wizard.y+wizard.height-6,
+      'Reminders reverts to the previous vertical split');
+    console.log('PASS Classic app layouts at 1920x1080',JSON.stringify(classic));
     await desktop.close();
 
     // An isolated, blank phone browser with synthetic GPS; this never sees or
