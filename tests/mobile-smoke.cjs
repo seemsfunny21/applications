@@ -241,6 +241,28 @@ const {chromium}=require('playwright');
     const list=await reminder.locator('.list-half').boundingBox();
     assert.ok(wizard&&list&&list.y>=wizard.y+wizard.height-6,
       'Reminders reverts to the previous vertical split');
+    // The Reminder navigation must behave like the mobile bottom bar,
+    // not like the old left desktop sidebar, at laptop and TV widths.
+    for(const [width,height] of [[1366,768],[1920,1080]]){
+      await deskPage.setViewportSize({width,height});
+      await openApp(deskPage,'reminder');
+      const remind=deskPage.frameLocator('#frame-reminder');
+      const sidebar=await remind.locator('.sidebar').boundingBox();
+      const content=await remind.locator('.content-area').boundingBox();
+      const nav=await remind.locator('.main-nav').boundingBox();
+      const layout=await remind.locator('.main-nav').evaluate(el=>getComputedStyle(el).gridTemplateColumns);
+      assert.ok(sidebar&&sidebar.y>=height-90&&sidebar.width<=720&&sidebar.width>=650,
+        'Reminder navigation moves to bottom at '+width+': '+JSON.stringify(sidebar));
+      assert.ok(content&&content.width<=720&&content.x>=(width-720)/2-2,
+        'Reminder content stays centered: '+JSON.stringify(content));
+      assert.ok(nav&&nav.y>=sidebar.y&&layout.trim().split(/\s+/).length===4,
+        'Reminder bottom navigation has four balanced tabs at '+width);
+      const firstNav=remind.locator('.main-nav [data-filter="today"]');
+      await firstNav.click();
+      assert.ok((await firstNav.getAttribute('class')).includes('active'),
+        'Reminder bottom navigation stays usable at '+width);
+      console.log('PASS Reminder bottom navigation '+width+'x'+height);
+    }
     console.log('PASS Classic app layouts at 1920x1080',JSON.stringify(classic));
     await desktop.close();
 
