@@ -63,7 +63,30 @@ const {chromium}=require('playwright');
       const box=await hero.boundingBox();
       assert.ok(box&&box.width>260&&box.height>=72&&box.height<=120,
         'Visible aligned banner: '+key);
-      assert.equal(await hero.evaluate(el=>el.complete&&el.naturalWidth>0),true,'Hero loaded: '+key);
+      let loaded=await hero.evaluate(el=>el.complete&&el.naturalWidth>0);
+      if(!loaded){
+        // GitHub Pages sometimes serves a partially available image while
+        // a new deployment propagates. Diagnose and retry before failing.
+        const imageDetails=await hero.evaluate(async el=>{
+          const src=el.currentSrc||el.src;
+          try{
+            const r=await fetch(src,{cache:'reload'});
+            return {src,status:r.status,type:r.headers.get('content-type'),
+              length:Number(r.headers.get('content-length')||0),complete:el.complete,
+              naturalWidth:el.naturalWidth};
+          }catch(e){return {src,error:String(e),complete:el.complete,naturalWidth:el.naturalWidth}}
+        });
+        console.log('IMAGE LOAD DIAGNOSTIC '+key+' '+JSON.stringify(imageDetails));
+        loaded=await hero.evaluate(el=>new Promise(resolve=>{
+          const src=el.currentSrc||el.src;
+          const retry=new Image();
+          const timer=setTimeout(()=>resolve(false),8000);
+          retry.onload=()=>{clearTimeout(timer);resolve(retry.naturalWidth>0)};
+          retry.onerror=()=>{clearTimeout(timer);resolve(false)};
+          retry.src=src+'?desktop-test-retry='+Date.now();
+        }));
+      }
+      assert.equal(loaded,true,'Hero loaded: '+key);
       heights.push({key,height:Math.round(box.height*10)/10});
       const tab=gameKeys.has(key)?'games':key;
       assert.equal(await page.locator('#tab-'+tab).getAttribute('aria-selected'),'true');
