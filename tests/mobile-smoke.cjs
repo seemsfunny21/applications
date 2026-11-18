@@ -61,8 +61,14 @@ const {chromium}=require('playwright');
       await hero.waitFor({state:'visible',timeout:40000});
       await hero.evaluate(el=>el.decode?.().catch(()=>{}));
       const box=await hero.boundingBox();
+      if(!box||box.width<=260||box.height<72||box.height>120){
+        console.log('BANNER GEOMETRY DIAG '+key+' '+JSON.stringify({
+          box,viewport:await page.evaluate(()=>({w:innerWidth,h:innerHeight})),
+          frame:await page.locator('#frame-'+key).boundingBox()
+        }));
+      }
       assert.ok(box&&box.width>260&&box.height>=72&&box.height<=120,
-        'Visible aligned banner: '+key);
+        'Visible aligned banner: '+key+': '+JSON.stringify(box));
       let loaded=await hero.evaluate(el=>el.complete&&el.naturalWidth>0);
       if(!loaded){
         // GitHub Pages sometimes serves a partially available image while
