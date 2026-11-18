@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#071426">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Πέντε εφαρμογές, μία οθόνη.">
+<meta name="description" content="Έξι εφαρμογές, μία οθόνη.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Οι εφαρμογές μου">
@@ -19,7 +19,7 @@
 html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--fg)}
 .app{display:flex;flex-direction:column;width:100%;height:100vh;height:100dvh;overflow:hidden;background:var(--bg)}
 .tabs{
-  display:grid;grid-template-columns:1fr 1.18fr 1.33fr .85fr .92fr;flex:0 0 auto;
+  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));flex:0 0 auto;
   gap:3px;align-items:stretch;min-height:47px;
   padding:calc(5px + env(safe-area-inset-top,0px)) 5px 5px;
   background:linear-gradient(180deg,#112b49,#091b30);
@@ -42,6 +42,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .tab:focus-visible{outline:2px solid #a9deff;outline-offset:-3px}
 .tab:active{filter:brightness(1.2)}
 .tab{touch-action:manipulation}
+.tab .tab-short{display:none}
+@media(max-width:620px){
+ .tab .tab-full{display:none}
+ .tab .tab-short{display:inline}
+}
 @media(hover:hover){
  .tab:not([aria-selected="true"]):hover{
   color:#edf8ff;background:#194166;border-color:#396b9a;
@@ -69,11 +74,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 <body>
 <div class="app">
   <nav class="tabs" aria-label="Επιλογή εφαρμογής" role="tablist">
-    <button class="tab" id="tab-voltes" type="button" role="tab" aria-controls="frame-voltes" aria-selected="true" data-app="voltes">Ποδηλασία</button>
-    <button class="tab" id="tab-douleia" type="button" role="tab" aria-controls="frame-douleia" aria-selected="false" data-app="douleia">Δρομολόγια</button>
-    <button class="tab" id="tab-reminder" type="button" role="tab" aria-controls="frame-reminder" aria-selected="false" data-app="reminder">Υπενθυμίσεις</button>
-    <button class="tab" id="tab-seemsfunny" type="button" role="tab" aria-controls="frame-seemsfunny" aria-selected="false" data-app="seemsfunny">Pegasus</button>
-    <button class="tab" id="tab-Parking" type="button" role="tab" aria-controls="frame-Parking" aria-selected="false" data-app="Parking">Parking</button>
+    <button class="tab" id="tab-voltes" type="button" role="tab" aria-label="Ποδηλασία" aria-controls="frame-voltes" aria-selected="true" data-app="voltes"><span class="tab-full">Ποδηλασία</span><span class="tab-short">Ποδηλ.</span></button>
+    <button class="tab" id="tab-douleia" type="button" role="tab" aria-label="Δρομολόγια" aria-controls="frame-douleia" aria-selected="false" data-app="douleia"><span class="tab-full">Δρομολόγια</span><span class="tab-short">Δρομολ.</span></button>
+    <button class="tab" id="tab-reminder" type="button" role="tab" aria-label="Υπενθυμίσεις" aria-controls="frame-reminder" aria-selected="false" data-app="reminder"><span class="tab-full">Υπενθυμίσεις</span><span class="tab-short">Υπενθ.</span></button>
+    <button class="tab" id="tab-seemsfunny" type="button" role="tab" aria-label="Pegasus" aria-controls="frame-seemsfunny" aria-selected="false" data-app="seemsfunny"><span>Pegasus</span></button>
+    <button class="tab" id="tab-Parking" type="button" role="tab" aria-label="Parking" aria-controls="frame-Parking" aria-selected="false" data-app="Parking"><span>Parking</span></button>
+    <button class="tab" id="tab-sudokufunny" type="button" role="tab" aria-label="SudokuFunny" aria-controls="frame-sudokufunny" aria-selected="false" data-app="sudokufunny"><span class="tab-full">SudokuFunny</span><span class="tab-short">Sudoku</span></button>
   </nav>
   <main class="stage" id="stage" aria-label="Περιεχόμενο εφαρμογής">
     <div class="loading" id="loading" role="status" aria-live="polite"><div><span aria-hidden="true"></span>Άνοιγμα Ποδηλασίας…</div></div>
@@ -87,7 +93,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     douleia:{name:'Δρομολόγια',url:'https://seemsfunny21.github.io/douleia/'},
     reminder:{name:'Υπενθυμίσεις',url:'https://seemsfunny21.github.io/reminder/'},
     seemsfunny:{name:'Pegasus',url:'https://seemsfunny21.github.io/seemsfunny/'},
-    Parking:{name:'Parking',url:'https://seemsfunny21.github.io/Parking/'}
+    Parking:{name:'Parking',url:'https://seemsfunny21.github.io/Parking/'},
+    sudokufunny:{name:'SudokuFunny',url:'https://seemsfunny21.github.io/sudokufunny/'}
   });
   const stage=document.getElementById('stage');
   const tabs=Array.from(document.querySelectorAll('.tab'));
@@ -96,6 +103,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   const ready=new Set();
   let current='voltes';
   let warmupStarted=false;
+  function notifySudokuVisibility(){
+    const sudoku=frames.get('sudokufunny');
+    if(!sudoku?.contentWindow)return;
+    sudoku.contentWindow.postMessage({
+      type:'sudokufunny:visibility',
+      active:current==='sudokufunny'&&document.visibilityState==='visible'
+    },location.origin);
+  }
   function createFrame(key){
     if(frames.has(key))return frames.get(key);
     const app=apps[key];
@@ -109,6 +124,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     frame.addEventListener('load',()=>{
       ready.add(key);
       if(current===key)loading.hidden=true;
+      if(key==='sudokufunny')notifySudokuVisibility();
     });
     frame.src=app.url;
     frames.set(key,frame);
@@ -132,8 +148,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     }
     loading.hidden=ready.has(key);
     if(!loading.hidden)loading.textContent='Άνοιγμα '+apps[key].name+'…';
+    notifySudokuVisibility();
   }
   tabs.forEach(tab=>tab.addEventListener('click',()=>select(tab.dataset.app)));
+  document.addEventListener('visibilitychange',notifySudokuVisibility);
+  window.addEventListener('pagehide',()=>{
+    const sudoku=frames.get('sudokufunny');
+    sudoku?.contentWindow?.postMessage({type:'sudokufunny:visibility',active:false},location.origin);
+  });
   const first=new URLSearchParams(location.search).get('app');
   select(apps[first]?first:'voltes');
   // Avoid keeping every app active on screen. Preload sequentially, in idle time,
@@ -142,7 +164,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     if(warmupStarted)return;
     warmupStarted=true;
     if(navigator.connection&&navigator.connection.saveData)return;
-    const order=['voltes','douleia','reminder','seemsfunny','Parking'];
+    const order=['voltes','douleia','reminder','seemsfunny','Parking','sudokufunny'];
     order.forEach((key,i)=>setTimeout(()=>{
       if(document.visibilityState!=='visible'||frames.has(key))return;
       const frame=createFrame(key);
