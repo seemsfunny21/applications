@@ -59,6 +59,28 @@ const {chromium}=require('playwright');
       await openApp(page,key);
       const hero=page.frameLocator('#frame-'+key).locator(selector);
       await hero.waitFor({state:'visible',timeout:40000});
+      // Image elements can appear before a remote PWA's stylesheets finish
+      // loading. Measure only once its mobile responsive rules have applied.
+      const styled=await hero.evaluate(el=>new Promise(resolve=>{
+        const start=Date.now();
+        const check=()=>{
+          const b=el.getBoundingClientRect();
+          if(b.width>260&&b.width<=innerWidth+2&&b.height>=72&&b.height<=120){
+            resolve(true);return;
+          }
+          if(Date.now()-start>=15000){resolve(false);return;}
+          setTimeout(check,150);
+        };
+        check();
+      }));
+      if(!styled){
+        console.log('STYLE LOAD DIAGNOSTIC '+key+' '+JSON.stringify(
+          await hero.evaluate(el=>({ready:document.readyState,
+            width:innerWidth,rect:el.getBoundingClientRect().toJSON(),
+            styles:[...document.querySelectorAll('link[rel=stylesheet]')].map(l=>
+              ({url:l.href,loaded:Boolean(l.sheet)}))}))
+        ));
+      }
       await hero.evaluate(el=>el.decode?.().catch(()=>{}));
       const box=await hero.boundingBox();
       if(!box||box.width<=260||box.height<72||box.height>120){
