@@ -56,6 +56,14 @@ const {chromium}=require('playwright');
         await page.locator('#tab-'+key).click();
         const hero=page.frameLocator('#frame-'+key).locator(selector);
         await hero.waitFor({state:'visible',timeout:30000});
+        // Pegasus has a 300ms translateY(15px) entrance animation. Measure
+        // its settled position, not a transient first frame.
+        if(key==='seemsfunny'){
+          await hero.evaluate(async el=>{
+            const view=el.closest('.view');
+            if(view)await Promise.all(view.getAnimations().map(a=>a.finished.catch(()=>{})));
+          });
+        }
         const box=await hero.boundingBox();
         assert.ok(box,'Visible banner for '+key+' at '+width+'px');
         result.push({app:key,width:+box.width.toFixed(1),
