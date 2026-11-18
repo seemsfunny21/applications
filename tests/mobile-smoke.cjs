@@ -23,11 +23,17 @@ const {chromium}=require('playwright');
       ['douleia','.routes-hero-art'],
       ['reminder','.reminder-hero-art'],
       ['seemsfunny','.pegasus-hero-art'],
-      ['Parking','.parking-hero-art']
+      ['Parking','.parking-hero-art'],
+      ['sudokufunny','.sudoku-hero-art']
     ];
-    assert.equal(await page.locator('nav.tabs button.tab').count(),5);
+    const sudokuLive=await page.request.get(base+'/sudokufunny/index.html',{timeout:15000})
+      .then(r=>r.ok()).catch(()=>false);
+    if(!sudokuLive)console.log('PENDING SudokuFunny Pages activation: live game checks require first-time GitHub Pages enablement');
+    const liveApps=apps.filter(([key])=>key!=='sudokufunny'||sudokuLive);
+    assert.equal(await page.locator('nav.tabs button.tab').count(),6);
+    assert.equal(await page.locator('#tab-sudokufunny').getAttribute('aria-label'),'SudokuFunny');
     const heights=[];
-    for(const [key,selector] of apps){
+    for(const [key,selector] of liveApps){
       await page.locator('#tab-'+key).click();
       const frame=page.frameLocator('#frame-'+key);
       const hero=frame.locator(selector);
@@ -43,16 +49,16 @@ const {chromium}=require('playwright');
       assert.equal(selected,'true','Applications tab selection: '+key);
     }
     const min=Math.min(...heights.map(x=>x.height)),max=Math.max(...heights.map(x=>x.height));
-    assert.ok(max-min<=3,'Five mobile headers should have a shared height: '+JSON.stringify(heights));
-    console.log('PASS Five application banners load at aligned mobile heights',heights);
+    assert.ok(max-min<=3,'Published mobile headers should have a shared height: '+JSON.stringify(heights));
+    console.log('PASS All published application banners align at mobile heights',heights);
 
-    // All five apps were changed since the previous live test; verify actual
+    // All six apps share the same design; verify actual
     // positioning and widths, not just banner heights, at two phone sizes.
     const phoneMetrics=[];
     for(const width of [393,360]){
       await page.setViewportSize({width,height:844});
       const result=[];
-      for(const [key,selector] of apps){
+      for(const [key,selector] of liveApps){
         await page.locator('#tab-'+key).click();
         const hero=page.frameLocator('#frame-'+key).locator(selector);
         await hero.waitFor({state:'visible',timeout:30000});
@@ -80,7 +86,27 @@ const {chromium}=require('playwright');
       assert.ok(tabsFit,'Applications navigation is clipped at '+width+'px');
       phoneMetrics.push({phoneWidth:width,align:result});
     }
-    console.log('PASS Mobile geometry, header symmetry, and five tabs at 360/393px',JSON.stringify(phoneMetrics));
+    console.log('PASS Mobile geometry, header symmetry, and six tabs at 360/393px',JSON.stringify(phoneMetrics));
+    if(sudokuLive){
+      await page.locator('#tab-sudokufunny').click();
+      const sudoku=page.frameLocator('#frame-sudokufunny');
+      await sudoku.locator('#resumeButton').waitFor({state:'visible',timeout:30000});
+      await sudoku.locator('#resumeButton').click();
+      await page.waitForFunction(()=>{
+        const frame=document.querySelector('#frame-sudokufunny');
+        return frame?.contentWindow?.document.querySelector('#pauseOverlay')?.hidden===true;
+      },null,{timeout:15000});
+      await page.locator('#tab-Parking').click();
+      await page.waitForFunction(()=>{
+        const frame=document.querySelector('#frame-sudokufunny');
+        return frame?.contentWindow?.document.querySelector('#pauseOverlay')?.hidden===false;
+      },null,{timeout:15000});
+      await page.locator('#tab-sudokufunny').click();
+      assert.equal(await sudoku.locator('#pauseOverlay').isVisible(),true,
+        'Switching back to Sudoku leaves the saved game paused');
+      assert.equal(await sudoku.locator('#gameStatus').textContent(),'Σε παύση');
+      console.log('PASS Applications sends Sudoku auto-pause signal and does not auto-resume');
+    }
     await context.close();
 
     // Also verify every tab at desktop width. Pegasus intentionally routes to
@@ -91,8 +117,8 @@ const {chromium}=require('playwright');
     });
     const desktopPage=await desktopContext.newPage();
     await desktopPage.goto(base+'/applications/',{waitUntil:'domcontentloaded',timeout:45000});
-    assert.equal(await desktopPage.locator('nav.tabs button.tab').count(),5);
-    for(const [key] of apps){
+    assert.equal(await desktopPage.locator('nav.tabs button.tab').count(),6);
+    for(const [key] of liveApps){
       await desktopPage.locator('#tab-'+key).click();
       const frame=desktopPage.locator('#frame-'+key);
       await frame.waitFor({state:'visible',timeout:35000});
@@ -106,7 +132,7 @@ const {chromium}=require('playwright');
     assert.equal(await desktopPage.evaluate(()=>
       document.documentElement.scrollWidth<=document.documentElement.clientWidth+1
     ),true,'Applications desktop launcher has no horizontal overflow');
-    console.log('PASS Five Applications tabs open in desktop Chromium without launcher overflow');
+    console.log('PASS Published Applications tabs open in desktop Chromium without launcher overflow');
     await desktopContext.close();
 
     // An isolated, blank phone browser with synthetic GPS; this never sees or
