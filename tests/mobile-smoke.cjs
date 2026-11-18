@@ -140,6 +140,27 @@ const {chromium}=require('playwright');
       assert.equal(await deskPage.locator('iframe.app-frame.active').count(),1,
         'One visible frame: '+key);
     }
+    // Both games must be able to enter native browser fullscreen from their
+    // embedded iframe, not just when opened directly at their own GitHub URL.
+    for(const key of ['sudokufunny','reversifunny']){
+      if(!live.some(item=>item[0]===key))continue;
+      await openApp(deskPage,key);
+      const frame=deskPage.frameLocator('#frame-'+key);
+      const toggle=frame.locator('#fullscreenButton');
+      await toggle.waitFor({state:'visible',timeout:20000});
+      const boardBefore=await frame.locator('.board-wrap').boundingBox();
+      await toggle.click();
+      await deskPage.waitForFunction(()=>Boolean(document.fullscreenElement),null,{timeout:8000});
+      const expanded=await frame.locator('.board-wrap').boundingBox();
+      const pressed=await toggle.getAttribute('aria-pressed');
+      assert.equal(pressed,'true','Native fullscreen is active in '+key);
+      assert.ok(expanded&&boardBefore&&expanded.width>boardBefore.width+10,
+        'Embedded '+key+' board expands on fullscreen: '+JSON.stringify({before:boardBefore.width,after:expanded?.width}));
+      await toggle.click();
+      await deskPage.waitForFunction(()=>!document.fullscreenElement,null,{timeout:8000});
+      assert.equal(await toggle.getAttribute('aria-pressed'),'false');
+      console.log('PASS Embedded '+key+' enters and exits true fullscreen');
+    }
     assert.equal(await deskPage.evaluate(()=>
       document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),
       true,'No desktop overflow');
