@@ -105,11 +105,9 @@ const {chromium}=require('playwright');
       const sudoku=page.frameLocator('#frame-sudokufunny');
       await sudoku.locator('#resumeButton').waitFor({state:'visible',timeout:25000});
       await sudoku.locator('#resumeButton').click();
-      await page.waitForFunction(()=>document.querySelector('#frame-sudokufunny')?
-        .contentWindow?.document.querySelector('#pauseOverlay')?.hidden===true);
+      await page.waitForFunction(()=>document.querySelector('#frame-sudokufunny')?.contentWindow?.document.querySelector('#pauseOverlay')?.hidden===true);
       await page.locator('#tab-games').click();
-      await page.waitForFunction(()=>document.querySelector('#frame-sudokufunny')?
-        .contentWindow?.document.querySelector('#pauseOverlay')?.hidden===false);
+      await page.waitForFunction(()=>document.querySelector('#frame-sudokufunny')?.contentWindow?.document.querySelector('#pauseOverlay')?.hidden===false);
       await page.locator('#gamesHub [data-game="sudokufunny"]').click();
       assert.equal(await sudoku.locator('#pauseOverlay').isVisible(),true);
       console.log('PASS Sudoku pauses when Games hub reopens');
@@ -120,8 +118,7 @@ const {chromium}=require('playwright');
       await reversi.locator('#resumeButton').waitFor({state:'visible',timeout:25000});
       await reversi.locator('#resumeButton').click();
       await page.locator('#tab-voltes').click();
-      await page.waitForFunction(()=>document.querySelector('#frame-reversifunny')?
-        .contentWindow?.document.querySelector('#pauseOverlay')?.hidden===false);
+      await page.waitForFunction(()=>document.querySelector('#frame-reversifunny')?.contentWindow?.document.querySelector('#pauseOverlay')?.hidden===false);
       await openApp(page,'reversifunny');
       assert.equal(await reversi.locator('#pauseOverlay').isVisible(),true);
       console.log('PASS Reversi pauses across Applications navigation');
