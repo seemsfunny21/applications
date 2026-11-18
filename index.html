@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#071426">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Έξι εφαρμογές, μία οθόνη.">
+<meta name="description" content="Έξι καρτέλες, με δύο παιχνίδια στην ενότητα Παιχνίδια.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Οι εφαρμογές μου">
@@ -69,6 +69,44 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .loading span{display:block;width:30px;height:30px;border:3px solid #355c83;border-top-color:#a3d8ff;border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+.games-hub{
+  position:absolute;inset:0;z-index:2;overflow-y:auto;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 5%,#183d6d 0%,#071426 70%);
+  padding:22px 12px 28px;color:#f1f8ff;text-align:center
+}
+.games-hub[hidden]{display:none!important}
+.games-shell{width:min(100%,680px);margin:auto}
+.games-kicker{font-size:10px;letter-spacing:.18em;color:#8fcaff;font-weight:900}
+.games-heading h1{font-size:clamp(23px,5vw,32px);margin:7px 0 5px}
+.games-heading p{font-size:12px;line-height:1.5;color:#bed8f2;margin:0 0 22px}
+.games-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.game-choice{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  min-width:0;min-height:215px;padding:15px 8px;cursor:pointer;
+  background:linear-gradient(145deg,#163c68,#0a2442);
+  border:1px solid #5da8f284;border-radius:18px;
+  box-shadow:0 9px 28px #020b1f6b,inset 0 1px #ffffff1e;
+  color:#f6fbff;touch-action:manipulation;transition:filter .15s,transform .15s
+}
+.game-choice:active{filter:brightness(1.18);transform:scale(.98)}
+.game-choice:focus-visible{outline:3px solid #9ddcff;outline-offset:2px}
+.game-mark{height:75px;min-width:88px;display:grid;place-items:center;line-height:1.25;
+  color:#bde8ff;border:1px solid #84c9ff78;border-radius:14px;
+  background:linear-gradient(145deg,#1c507a,#0c335b);
+  box-shadow:0 0 26px #138bdb2a}
+.sudoku-mark{font-size:15px;font-weight:850;letter-spacing:7px;text-align:center;padding-left:7px;white-space:pre}
+.reversi-mark{font-size:31px;font-weight:850;line-height:1;white-space:pre;color:#eef8ff;text-shadow:0 0 8px #3cbdff}
+.game-choice strong{font-size:17px}
+.game-choice>span:not(.game-mark){font-size:12px;color:#cee5ff}
+.game-choice small{color:#a7c8e6;font-size:10px;line-height:1.35}
+.games-tip{margin:18px 0 0;font-size:11px;color:#a9cae9;line-height:1.5}
+@media(max-width:360px){
+  .games-options{gap:8px}.game-choice{padding:12px 4px;min-height:190px}
+  .game-choice strong{font-size:15px}.game-choice small{font-size:9px}
+  .game-mark{height:65px;min-width:78px}
+}
+@media(hover:hover){.game-choice:hover{filter:brightness(1.16);transform:translateY(-2px)}}
 </style>
 </head>
 <body>
@@ -79,37 +117,57 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     <button class="tab" id="tab-reminder" type="button" role="tab" aria-label="Υπενθυμίσεις" aria-controls="frame-reminder" aria-selected="false" data-app="reminder"><span class="tab-full">Υπενθυμίσεις</span><span class="tab-short">Υπενθ.</span></button>
     <button class="tab" id="tab-seemsfunny" type="button" role="tab" aria-label="Pegasus" aria-controls="frame-seemsfunny" aria-selected="false" data-app="seemsfunny"><span>Pegasus</span></button>
     <button class="tab" id="tab-Parking" type="button" role="tab" aria-label="Parking" aria-controls="frame-Parking" aria-selected="false" data-app="Parking"><span>Parking</span></button>
-    <button class="tab" id="tab-sudokufunny" type="button" role="tab" aria-label="SudokuFunny" aria-controls="frame-sudokufunny" aria-selected="false" data-app="sudokufunny"><span class="tab-full">SudokuFunny</span><span class="tab-short">Sudoku</span></button>
+    <button class="tab" id="tab-games" type="button" role="tab" aria-label="Παιχνίδια" aria-controls="gamesHub" aria-selected="false" data-app="games"><span>Παιχνίδια</span></button>
   </nav>
   <main class="stage" id="stage" aria-label="Περιεχόμενο εφαρμογής">
+    <section class="games-hub" id="gamesHub" aria-label="Επιλογή παιχνιδιού" hidden>
+      <div class="games-shell">
+        <div class="games-heading"><span class="games-kicker">ΕΠΙΛΟΓΗ ΠΑΙΧΝΙΔΙΟΥ</span><h1>Παιχνίδια</h1><p>Διάλεξε παιχνίδι. Η πρόοδός σου αποθηκεύεται ξεχωριστά στη συσκευή.</p></div>
+        <div class="games-options">
+          <button class="game-choice" type="button" data-game="sudokufunny" aria-label="Άνοιγμα SudokuFunny">
+            <span class="game-mark sudoku-mark" aria-hidden="true">1 2 3<br>4 5 6<br>7 8 9</span>
+            <strong>SudokuFunny</strong><span>Sudoku 9×9</span><small>4 επίπεδα · Σημειώσεις</small>
+          </button>
+          <button class="game-choice" type="button" data-game="reversifunny" aria-label="Άνοιγμα ReversiFunny">
+            <span class="game-mark reversi-mark" aria-hidden="true">● ○<br>○ ●</span>
+            <strong>ReversiFunny</strong><span>Reversi 8×8</span><small>Υπολογιστής ή 2 παίκτες</small>
+          </button>
+        </div>
+        <p class="games-tip">Για να αλλάξεις παιχνίδι, πάτησε ξανά την καρτέλα «Παιχνίδια».</p>
+      </div>
+    </section>
     <div class="loading" id="loading" role="status" aria-live="polite"><div><span aria-hidden="true"></span>Άνοιγμα Ποδηλασίας…</div></div>
   </main>
 </div>
 <script>
 (() => {
   'use strict';
-  const apps = Object.freeze({
+  const apps=Object.freeze({
     voltes:{name:'Ποδηλασία',url:'https://seemsfunny21.github.io/voltes/'},
     douleia:{name:'Δρομολόγια',url:'https://seemsfunny21.github.io/douleia/'},
     reminder:{name:'Υπενθυμίσεις',url:'https://seemsfunny21.github.io/reminder/'},
     seemsfunny:{name:'Pegasus',url:'https://seemsfunny21.github.io/seemsfunny/'},
     Parking:{name:'Parking',url:'https://seemsfunny21.github.io/Parking/'},
-    sudokufunny:{name:'SudokuFunny',url:'https://seemsfunny21.github.io/sudokufunny/'}
+    sudokufunny:{name:'SudokuFunny',url:'https://seemsfunny21.github.io/sudokufunny/'},
+    reversifunny:{name:'ReversiFunny',url:'https://seemsfunny21.github.io/reversifunny/'}
   });
+  const GAMES=new Set(['sudokufunny','reversifunny']);
   const stage=document.getElementById('stage');
+  const hub=document.getElementById('gamesHub');
   const tabs=Array.from(document.querySelectorAll('.tab'));
   const loading=document.getElementById('loading');
-  const frames=new Map();
-  const ready=new Set();
-  let current='voltes';
-  let warmupStarted=false;
-  function notifySudokuVisibility(){
-    const sudoku=frames.get('sudokufunny');
-    if(!sudoku?.contentWindow)return;
-    sudoku.contentWindow.postMessage({
-      type:'sudokufunny:visibility',
-      active:current==='sudokufunny'&&document.visibilityState==='visible'
-    },location.origin);
+  const frames=new Map(),ready=new Set();
+  let current='voltes',activeGame=null,warmupStarted=false;
+  function activeKey(){return current==='games'?activeGame:current}
+  function notifyGameVisibility(){
+    for(const key of GAMES){
+      const frame=frames.get(key);
+      if(!frame?.contentWindow)return;
+      frame.contentWindow.postMessage({
+        type:key+':visibility',
+        active:activeKey()===key&&document.visibilityState==='visible'
+      },location.origin);
+    }
   }
   function createFrame(key){
     if(frames.has(key))return frames.get(key);
@@ -123,52 +181,65 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     frame.referrerPolicy='strict-origin-when-cross-origin';
     frame.addEventListener('load',()=>{
       ready.add(key);
-      if(current===key)loading.hidden=true;
-      if(key==='sudokufunny')notifySudokuVisibility();
+      if(activeKey()===key)loading.hidden=true;
+      if(GAMES.has(key))notifyGameVisibility();
     });
     frame.src=app.url;
     frames.set(key,frame);
     stage.insertBefore(frame,loading);
     return frame;
   }
-  function select(key){
-    if(!apps[key])return;
-    current=key;
+  function show(){
+    const active=activeKey();
     for(const tab of tabs){
-      const selected=tab.dataset.app===key;
-      tab.setAttribute('aria-selected',selected?'true':'false');
+      tab.setAttribute('aria-selected',tab.dataset.app===current?'true':'false');
     }
-    const frame=createFrame(key);
-    for(const [id,item] of frames){
-      const active=id===key;
-      item.classList.toggle('active',active);
-      if(active)item.removeAttribute('inert');
-      else item.setAttribute('inert','');
-      item.setAttribute('aria-hidden',active?'false':'true');
+    if(active)createFrame(active);
+    for(const [id,frame] of frames){
+      const visible=id===active;
+      frame.classList.toggle('active',visible);
+      if(visible)frame.removeAttribute('inert');
+      else frame.setAttribute('inert','');
+      frame.setAttribute('aria-hidden',visible?'false':'true');
     }
-    loading.hidden=ready.has(key);
-    if(!loading.hidden)loading.textContent='Άνοιγμα '+apps[key].name+'…';
-    notifySudokuVisibility();
+    hub.hidden=!(current==='games'&&!activeGame);
+    loading.hidden=!active||ready.has(active);
+    if(!loading.hidden)loading.textContent='Άνοιγμα '+apps[active].name+'…';
+    notifyGameVisibility();
+  }
+  function select(key){
+    if(key==='games'){current='games';activeGame=null;show();return}
+    if(!apps[key]||GAMES.has(key))return;
+    current=key;activeGame=null;show();
+  }
+  function openGame(key){
+    if(!GAMES.has(key))return;
+    current='games';activeGame=key;show();
   }
   tabs.forEach(tab=>tab.addEventListener('click',()=>select(tab.dataset.app)));
-  document.addEventListener('visibilitychange',notifySudokuVisibility);
+  hub.querySelectorAll('[data-game]').forEach(btn=>
+    btn.addEventListener('click',()=>openGame(btn.dataset.game)));
+  document.addEventListener('visibilitychange',notifyGameVisibility);
   window.addEventListener('pagehide',()=>{
-    const sudoku=frames.get('sudokufunny');
-    sudoku?.contentWindow?.postMessage({type:'sudokufunny:visibility',active:false},location.origin);
+    for(const key of GAMES){
+      frames.get(key)?.contentWindow?.postMessage({type:key+':visibility',active:false},location.origin);
+    }
   });
   const first=new URLSearchParams(location.search).get('app');
-  select(apps[first]?first:'voltes');
-  // Avoid keeping every app active on screen. Preload sequentially, in idle time,
-  // and stop warm-up when the page is hidden or the connection requests data saving.
+  if(GAMES.has(first))openGame(first);
+  else select(first==='games'?'games':apps[first]?first:'voltes');
+
+  // Preload the usual apps only; games open on demand to avoid unnecessary
+  // timers and CPU activity while the user is in another project.
   function warm(){
     if(warmupStarted)return;
     warmupStarted=true;
     if(navigator.connection&&navigator.connection.saveData)return;
-    const order=['voltes','douleia','reminder','seemsfunny','Parking','sudokufunny'];
+    const order=['voltes','douleia','reminder','seemsfunny','Parking'];
     order.forEach((key,i)=>setTimeout(()=>{
       if(document.visibilityState!=='visible'||frames.has(key))return;
       const frame=createFrame(key);
-      if(current!==key){frame.classList.remove('active');frame.setAttribute('inert','');frame.setAttribute('aria-hidden','true');}
+      if(activeKey()!==key){frame.classList.remove('active');frame.setAttribute('inert','');frame.setAttribute('aria-hidden','true');}
     },900+i*1250));
   }
   window.addEventListener('load',()=>{
