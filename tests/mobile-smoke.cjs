@@ -198,7 +198,7 @@ const {chromium}=require('playwright');
       'Cycling dashboard must expand beyond phone width on a TV');
     assert.ok(desktopGeometry.douleia.wrap?.w>=1400,
       'Routes dashboard must show multi-column cards on a TV');
-    assert.equal(desktopGeometry.douleia.cols.trim().split(/\\s+/).length,3,
+    assert.equal(desktopGeometry.douleia.cols.trim().split(/\s+/).length,3,
       'Work routes must show three desktop columns');
     assert.ok(desktopGeometry.reminder.wizard&&desktopGeometry.reminder.list&&
       desktopGeometry.reminder.list.x>=desktopGeometry.reminder.wizard.x+desktopGeometry.reminder.wizard.w,
