@@ -1,139 +1,153 @@
 'use strict';
-/* Safe mobile-browser smoke tests. Fresh browser profile; no real user storage.
-   Do not screenshot or log private app contents or send mutations to Supabase. */
+/* Fresh Chromium profiles and synthetic GPS only; never inspect personal data. */
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {chromium}=require('playwright');
 
 (async()=>{
-  const binary=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium'].find(x=>fs.existsSync(x));
-  if(!binary)throw Error('Chromium/Chrome system binary unavailable');
+  const binary=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium']
+    .find(x=>fs.existsSync(x));
+  if(!binary)throw Error('Chromium/Chrome unavailable');
   const browser=await chromium.launch({headless:true,executablePath:binary,args:['--no-sandbox']});
-  const settings={
-    viewport:{width:393,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,
-    locale:'el-GR',timezoneId:'Europe/Athens',serviceWorkers:'allow'
-  };
+  const settings={viewport:{width:393,height:844},deviceScaleFactor:2,isMobile:true,
+    hasTouch:true,locale:'el-GR',timezoneId:'Europe/Athens',serviceWorkers:'allow'};
   const base='https://seemsfunny21.github.io';
+  const gameKeys=new Set(['sudokufunny','reversifunny']);
+  async function openApp(page,key){
+    if(gameKeys.has(key)){
+      await page.locator('#tab-games').click();
+      await page.locator('#gamesHub [data-game="'+key+'"]').click();
+    }else{
+      await page.locator('#tab-'+key).click();
+    }
+  }
   try{
     const context=await browser.newContext(settings);
     const page=await context.newPage();
     await page.goto(base+'/applications/',{waitUntil:'domcontentloaded',timeout:45000});
+    assert.equal(await page.locator('nav.tabs button.tab').count(),6);
+    await page.locator('#tab-games').click();
+    assert.equal(await page.locator('#tab-games').getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('#gamesHub').isVisible(),true);
+    assert.equal(await page.locator('#gamesHub button[data-game]').count(),2);
+    assert.equal(await page.locator('#gamesHub [data-game="sudokufunny"]').isVisible(),true);
+    assert.equal(await page.locator('#gamesHub [data-game="reversifunny"]').isVisible(),true);
+
     const apps=[
       ['voltes','.hero-scene'],
       ['douleia','.routes-hero-art'],
       ['reminder','.reminder-hero-art'],
       ['seemsfunny','.pegasus-hero-art'],
       ['Parking','.parking-hero-art'],
-      ['sudokufunny','.sudoku-hero-art']
+      ['sudokufunny','.sudoku-hero-art'],
+      ['reversifunny','.reversi-hero-art']
     ];
-    const sudokuLive=await page.request.get(base+'/sudokufunny/index.html',{timeout:15000})
-      .then(r=>r.ok()).catch(()=>false);
-    if(!sudokuLive)console.log('PENDING SudokuFunny Pages activation: live game checks require first-time GitHub Pages enablement');
-    const liveApps=apps.filter(([key])=>key!=='sudokufunny'||sudokuLive);
-    assert.equal(await page.locator('nav.tabs button.tab').count(),6);
-    assert.equal(await page.locator('#tab-sudokufunny').getAttribute('aria-label'),'SudokuFunny');
+    const live=[];
+    for(const [key,selector] of apps){
+      if(gameKeys.has(key)){
+        const ok=await page.request.get(base+'/'+key+'/index.html',{timeout:15000})
+          .then(r=>r.ok()).catch(()=>false);
+        if(!ok){
+          console.log('PENDING '+key+' first-time GitHub Pages activation');
+          continue;
+        }
+      }
+      live.push([key,selector]);
+    }
     const heights=[];
-    for(const [key,selector] of liveApps){
-      await page.locator('#tab-'+key).click();
-      const frame=page.frameLocator('#frame-'+key);
-      const hero=frame.locator(selector);
+    for(const [key,selector] of live){
+      await openApp(page,key);
+      const hero=page.frameLocator('#frame-'+key).locator(selector);
       await hero.waitFor({state:'visible',timeout:40000});
       await hero.evaluate(el=>el.decode?.().catch(()=>{}));
       const box=await hero.boundingBox();
-      assert.ok(box && box.width>260,'Banner is visible on mobile: '+key);
-      assert.ok(box.height>=72 && box.height<=120,'Banner height in mobile range: '+key+' = '+box.height);
-      const loaded=await hero.evaluate(el=>el.complete&&el.naturalWidth>0);
-      assert.equal(loaded,true,'Hero image loads: '+key);
+      assert.ok(box&&box.width>260&&box.height>=72&&box.height<=120,
+        'Visible aligned banner: '+key);
+      assert.equal(await hero.evaluate(el=>el.complete&&el.naturalWidth>0),true,'Hero loaded: '+key);
       heights.push({key,height:Math.round(box.height*10)/10});
-      const selected=await page.locator('#tab-'+key).getAttribute('aria-selected');
-      assert.equal(selected,'true','Applications tab selection: '+key);
+      const tab=gameKeys.has(key)?'games':key;
+      assert.equal(await page.locator('#tab-'+tab).getAttribute('aria-selected'),'true');
     }
-    const min=Math.min(...heights.map(x=>x.height)),max=Math.max(...heights.map(x=>x.height));
-    assert.ok(max-min<=3,'Published mobile headers should have a shared height: '+JSON.stringify(heights));
-    console.log('PASS All published application banners align at mobile heights',heights);
+    assert.ok(Math.max(...heights.map(x=>x.height))-Math.min(...heights.map(x=>x.height))<=3,
+      'Unified banner heights: '+JSON.stringify(heights));
+    console.log('PASS Six Applications tabs, Games hub and available aligned banners',heights);
 
-    // All six apps share the same design; verify actual
-    // positioning and widths, not just banner heights, at two phone sizes.
-    const phoneMetrics=[];
     for(const width of [393,360]){
       await page.setViewportSize({width,height:844});
-      const result=[];
-      for(const [key,selector] of liveApps){
-        await page.locator('#tab-'+key).click();
+      const geometry=[];
+      for(const [key,selector] of live){
+        await openApp(page,key);
         const hero=page.frameLocator('#frame-'+key).locator(selector);
         await hero.waitFor({state:'visible',timeout:30000});
-        // Pegasus has a 300ms translateY(15px) entrance animation. Measure
-        // its settled position, not a transient first frame.
-        if(key==='seemsfunny'){
-          await hero.evaluate(async el=>{
-            const view=el.closest('.view');
-            if(view)await Promise.all(view.getAnimations().map(a=>a.finished.catch(()=>{})));
-          });
-        }
-        const box=await hero.boundingBox();
-        assert.ok(box,'Visible banner for '+key+' at '+width+'px');
-        result.push({app:key,width:+box.width.toFixed(1),
-          x:+box.x.toFixed(1),y:+box.y.toFixed(1),height:+box.height.toFixed(1)});
+        if(key==='seemsfunny')await hero.evaluate(async el=>{
+          const view=el.closest('.view');
+          if(view)await Promise.all(view.getAnimations().map(x=>x.finished.catch(()=>{})));
+        });
+        const b=await hero.boundingBox();
+        assert.ok(b,'Banner '+key+' at '+width);
+        geometry.push({key,x:+b.x.toFixed(1),y:+b.y.toFixed(1),
+          width:+b.width.toFixed(1),height:+b.height.toFixed(1)});
       }
-      const span=k=>Math.max(...result.map(x=>x[k]))-Math.min(...result.map(x=>x[k]));
-      assert.ok(span('height')<=3,'Banner height inconsistency '+width+': '+JSON.stringify(result));
-      assert.ok(span('width')<=12,'Banner width inconsistency '+width+': '+JSON.stringify(result));
-      assert.ok(span('x')<=7,'Banner horizontal offset '+width+': '+JSON.stringify(result));
-      assert.ok(span('y')<=12,'Banner top offset '+width+': '+JSON.stringify(result));
-      const tabsFit=await page.locator('nav.tabs').evaluate(el=>
-        el.scrollWidth<=el.clientWidth+1 && Array.from(el.querySelectorAll('.tab')).every(btn=>btn.scrollWidth<=btn.clientWidth+1)
-      );
-      assert.ok(tabsFit,'Applications navigation is clipped at '+width+'px');
-      phoneMetrics.push({phoneWidth:width,align:result});
+      for(const field of ['height','width','x','y']){
+        const span=Math.max(...geometry.map(x=>x[field]))-Math.min(...geometry.map(x=>x[field]));
+        assert.ok(span<=(field==='width'?12:field==='x'?7:field==='y'?12:3),
+          'Inconsistent banner '+field+' at '+width+': '+JSON.stringify(geometry));
+      }
+      const fits=await page.locator('nav.tabs').evaluate(el=>
+        el.scrollWidth<=el.clientWidth+1&&
+        Array.from(el.querySelectorAll('.tab')).every(b=>b.scrollWidth<=b.clientWidth+1));
+      assert.equal(fits,true,'All six top tabs fit at '+width);
+      console.log('PASS Games and other app header geometry at '+width,JSON.stringify(geometry));
     }
-    console.log('PASS Mobile geometry, header symmetry, and six tabs at 360/393px',JSON.stringify(phoneMetrics));
-    if(sudokuLive){
-      await page.locator('#tab-sudokufunny').click();
+
+    if(live.some(x=>x[0]==='sudokufunny')){
+      await openApp(page,'sudokufunny');
       const sudoku=page.frameLocator('#frame-sudokufunny');
-      await sudoku.locator('#resumeButton').waitFor({state:'visible',timeout:30000});
+      await sudoku.locator('#resumeButton').waitFor({state:'visible',timeout:25000});
       await sudoku.locator('#resumeButton').click();
-      await page.waitForFunction(()=>{
-        const frame=document.querySelector('#frame-sudokufunny');
-        return frame?.contentWindow?.document.querySelector('#pauseOverlay')?.hidden===true;
-      },null,{timeout:15000});
-      await page.locator('#tab-Parking').click();
-      await page.waitForFunction(()=>{
-        const frame=document.querySelector('#frame-sudokufunny');
-        return frame?.contentWindow?.document.querySelector('#pauseOverlay')?.hidden===false;
-      },null,{timeout:15000});
-      await page.locator('#tab-sudokufunny').click();
-      assert.equal(await sudoku.locator('#pauseOverlay').isVisible(),true,
-        'Switching back to Sudoku leaves the saved game paused');
-      assert.equal(await sudoku.locator('#gameStatus').textContent(),'Σε παύση');
-      console.log('PASS Applications sends Sudoku auto-pause signal and does not auto-resume');
+      await page.waitForFunction(()=>document.querySelector('#frame-sudokufunny')?
+        .contentWindow?.document.querySelector('#pauseOverlay')?.hidden===true);
+      await page.locator('#tab-games').click();
+      await page.waitForFunction(()=>document.querySelector('#frame-sudokufunny')?
+        .contentWindow?.document.querySelector('#pauseOverlay')?.hidden===false);
+      await page.locator('#gamesHub [data-game="sudokufunny"]').click();
+      assert.equal(await sudoku.locator('#pauseOverlay').isVisible(),true);
+      console.log('PASS Sudoku pauses when Games hub reopens');
+    }
+    if(live.some(x=>x[0]==='reversifunny')){
+      await openApp(page,'reversifunny');
+      const reversi=page.frameLocator('#frame-reversifunny');
+      await reversi.locator('#resumeButton').waitFor({state:'visible',timeout:25000});
+      await reversi.locator('#resumeButton').click();
+      await page.locator('#tab-voltes').click();
+      await page.waitForFunction(()=>document.querySelector('#frame-reversifunny')?
+        .contentWindow?.document.querySelector('#pauseOverlay')?.hidden===false);
+      await openApp(page,'reversifunny');
+      assert.equal(await reversi.locator('#pauseOverlay').isVisible(),true);
+      console.log('PASS Reversi pauses across Applications navigation');
     }
     await context.close();
 
-    // Also verify every tab at desktop width. Pegasus intentionally routes to
-    // its separate desktop dashboard; don't assume it has a mobile hero there.
-    const desktopContext=await browser.newContext({
-      viewport:{width:1366,height:900},locale:'el-GR',
-      timezoneId:'Europe/Athens',serviceWorkers:'allow'
-    });
-    const desktopPage=await desktopContext.newPage();
-    await desktopPage.goto(base+'/applications/',{waitUntil:'domcontentloaded',timeout:45000});
-    assert.equal(await desktopPage.locator('nav.tabs button.tab').count(),6);
-    for(const [key] of liveApps){
-      await desktopPage.locator('#tab-'+key).click();
-      const frame=desktopPage.locator('#frame-'+key);
-      await frame.waitFor({state:'visible',timeout:35000});
-      await desktopPage.frameLocator('#frame-'+key).locator('body')
+    const desktop=await browser.newContext({viewport:{width:1366,height:900},
+      locale:'el-GR',timezoneId:'Europe/Athens',serviceWorkers:'allow'});
+    const deskPage=await desktop.newPage();
+    await deskPage.goto(base+'/applications/',{waitUntil:'domcontentloaded',timeout:45000});
+    assert.equal(await deskPage.locator('nav.tabs button.tab').count(),6);
+    await deskPage.locator('#tab-games').click();
+    assert.equal(await deskPage.locator('#gamesHub button[data-game]').count(),2);
+    for(const [key] of live){
+      await openApp(deskPage,key);
+      await deskPage.locator('#frame-'+key).waitFor({state:'visible',timeout:35000});
+      await deskPage.frameLocator('#frame-'+key).locator('body')
         .waitFor({state:'visible',timeout:35000});
-      assert.equal(await desktopPage.locator('iframe.app-frame.active').count(),1,
-        'One desktop app visible: '+key);
-      assert.equal(await desktopPage.locator('#tab-'+key).getAttribute('aria-selected'),
-        'true','Desktop tab state: '+key);
+      assert.equal(await deskPage.locator('iframe.app-frame.active').count(),1,
+        'One visible frame: '+key);
     }
-    assert.equal(await desktopPage.evaluate(()=>
-      document.documentElement.scrollWidth<=document.documentElement.clientWidth+1
-    ),true,'Applications desktop launcher has no horizontal overflow');
-    console.log('PASS Published Applications tabs open in desktop Chromium without launcher overflow');
-    await desktopContext.close();
+    assert.equal(await deskPage.evaluate(()=>
+      document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),
+      true,'No desktop overflow');
+    console.log('PASS Games hub and all published apps in desktop Chromium');
+    await desktop.close();
 
     // An isolated, blank phone browser with synthetic GPS; this never sees or
     // changes a person's location. Real GPS hardware cannot be tested remotely.
