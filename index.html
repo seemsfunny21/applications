@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#071426">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Έξι καρτέλες, με δύο παιχνίδια στην ενότητα Παιχνίδια.">
+<meta name="description" content="Επτά καρτέλες εφαρμογών, με δύο παιχνίδια στην ενότητα Παιχνίδια.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Οι εφαρμογές μου">
@@ -19,7 +19,7 @@
 html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--fg)}
 .app{display:flex;flex-direction:column;width:100%;height:100vh;height:100dvh;overflow:hidden;background:var(--bg)}
 .tabs{
-  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));flex:0 0 auto;
+  display:grid;grid-template-columns:repeat(7,minmax(0,1fr));flex:0 0 auto;
   gap:3px;align-items:stretch;min-height:47px;
   padding:calc(5px + env(safe-area-inset-top,0px)) 5px 5px;
   background:linear-gradient(180deg,#112b49,#091b30);
@@ -143,6 +143,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     <button class="tab" id="tab-reminder" type="button" role="tab" aria-label="Υπενθυμίσεις" aria-controls="frame-reminder" aria-selected="false" data-app="reminder"><span class="tab-full">Υπενθυμίσεις</span><span class="tab-short">Υπενθ.</span></button>
     <button class="tab" id="tab-seemsfunny" type="button" role="tab" aria-label="Pegasus" aria-controls="frame-seemsfunny" aria-selected="false" data-app="seemsfunny"><span>Pegasus</span></button>
     <button class="tab" id="tab-Parking" type="button" role="tab" aria-label="Parking" aria-controls="frame-Parking" aria-selected="false" data-app="Parking"><span>Parking</span></button>
+    <button class="tab" id="tab-kairos" type="button" role="tab" aria-label="Καιρός" aria-controls="frame-kairos" aria-selected="false" data-app="kairos"><span>Καιρός</span></button>
     <button class="tab" id="tab-games" type="button" role="tab" aria-label="Παιχνίδια" aria-controls="gamesHub" aria-selected="false" data-app="games"><span>Παιχνίδια</span></button>
   </nav>
   <main class="stage" id="stage" aria-label="Περιεχόμενο εφαρμογής">
@@ -174,6 +175,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     reminder:{name:'Υπενθυμίσεις',url:'https://seemsfunny21.github.io/reminder/'},
     seemsfunny:{name:'Pegasus',url:'https://seemsfunny21.github.io/seemsfunny/'},
     Parking:{name:'Parking',url:'https://seemsfunny21.github.io/Parking/'},
+    kairos:{name:'Καιρός',url:'https://seemsfunny21.github.io/applications/kairos/'},
     sudokufunny:{name:'SudokuFunny',url:'https://seemsfunny21.github.io/sudokufunny/'},
     reversifunny:{name:'ReversiFunny',url:'https://seemsfunny21.github.io/reversifunny/'}
   });
