@@ -61,12 +61,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block;z-index:1}
 .app-frame.is-leaving{display:block;z-index:3;pointer-events:none}
-/* 1.4-second horizontal cinematic shutter: black between the closing
+/* 0.9-second horizontal cinematic shutter: black between the closing
    and opening screens, without additional DOM, images or heavy blur effects. */
 .stage.is-shutter-transition{background:#000}
 .stage.is-shutter-transition::after{
   content:"";position:absolute;inset:0;z-index:2;background:#000;pointer-events:none;
-  animation:shutter-blackout 1400ms linear both
+  animation:shutter-blackout 900ms linear both
 }
 /* The outgoing image closes by 46%, followed by a short full-black hold.
    At 53% the incoming view starts opening horizontally from the center. */
@@ -202,7 +202,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     // Only a genuine tab change animates. The initial load stays instant.
     stage.classList.add('is-shutter-transition');
     const version=++wipeVersion;
-    const options={duration:1400,easing:'linear',fill:'both'};
+    const options={duration:900,easing:'linear',fill:'both'};
     try {
       wipeAnimations=[
         outgoing.animate([
@@ -224,7 +224,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     // Restore normal layout even if a tab changes or the animation stalls.
     wipeTimeout=setTimeout(()=>{
       if(wipeVersion===version)clearWipe();
-    },1750);
+    },1200);
     Promise.all(wipeAnimations.map(a=>a.finished.catch(()=>{}))).then(()=>{
       if(wipeVersion===version)clearWipe();
     });
