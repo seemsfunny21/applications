@@ -148,6 +148,18 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
             <span class="game-mark reversi-mark" aria-hidden="true">● ○<br>○ ●</span>
             <strong>ReversiFunny</strong><span>Reversi 8×8</span><small>Υπολογιστής ή 2 παίκτες</small>
           </button>
+          <button class="game-choice" type="button" data-game="minesweeperfunny" aria-label="Άνοιγμα MinesweeperFunny">
+            <span class="game-mark" aria-hidden="true">💣</span>
+            <strong>MinesweeperFunny</strong><span>Ναρκαλιευτής</span><small>3 επίπεδα · Ρεκόρ χρόνου</small>
+          </button>
+          <button class="game-choice" type="button" data-game="solitairefunny" aria-label="Άνοιγμα SolitaireFunny">
+            <span class="game-mark" aria-hidden="true">♠ ♥<br>♣ ♦</span>
+            <strong>SolitaireFunny</strong><span>Πασιέντζα Klondike</span><small>Αναίρεση · Υποδείξεις</small>
+          </button>
+          <button class="game-choice" type="button" data-game="tavlifunny" aria-label="Άνοιγμα TavliFunny">
+            <span class="game-mark" aria-hidden="true">🎲</span>
+            <strong>TavliFunny</strong><span>Πόρτες</span><small>Εναντίον υπολογιστή</small>
+          </button>
         </div>
         <p class="games-tip">Για να αλλάξεις παιχνίδι, πάτησε ξανά την καρτέλα «Παιχνίδια».</p>
       </div>
@@ -166,16 +178,18 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     Parking:{name:'Parking',url:'https://seemsfunny21.github.io/Parking/'},
     kairos:{name:'Καιρός',url:'https://seemsfunny21.github.io/applications/kairos/'},
     sudokufunny:{name:'SudokuFunny',url:'https://seemsfunny21.github.io/sudokufunny/'},
-    reversifunny:{name:'ReversiFunny',url:'https://seemsfunny21.github.io/reversifunny/'}
+    reversifunny:{name:'ReversiFunny',url:'https://seemsfunny21.github.io/reversifunny/'},
+    minesweeperfunny:{name:'MinesweeperFunny',url:'./minesweeperfunny/'},
+    solitairefunny:{name:'SolitaireFunny',url:'./solitairefunny/'},
+    tavlifunny:{name:'TavliFunny',url:'./tavlifunny/'}
   });
-  const GAMES=new Set(['sudokufunny','reversifunny']);
+  const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','tavlifunny']);
   const stage=document.getElementById('stage');
   const hub=document.getElementById('gamesHub');
   const tabs=Array.from(document.querySelectorAll('.tab'));
   const loading=document.getElementById('loading');
 
-  // A single blue astronaut grips a rope that pulls the old screen down.
-  // Keep the native app iframes stationary; only animate a clipped outgoing layer.
+  // Keep app iframes stationary; animate only the vertical black curtain.
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const frames=new Map(),ready=new Set();
   let current='voltes',activeGame=null,warmupStarted=false;
