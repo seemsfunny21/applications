@@ -61,9 +61,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block;z-index:1}
 .app-frame.is-leaving{display:block;z-index:2;pointer-events:none}
-.lightning-overlay{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;contain:paint}
-.lightning-overlay[hidden]{display:none!important}
-.lightning-overlay svg{display:block;width:100%;height:100%}
+.sheet-pull{position:absolute;top:0;left:0;right:0;height:0;z-index:3;pointer-events:none}
+.sheet-pull[hidden]{display:none!important}
+.sheet-fold{position:absolute;top:-8px;left:0;right:0;height:23px;
+  background:linear-gradient(180deg,#d9f5ff,#73c7f6 22%,#337cac 49%,#0b3152 87%);
+  clip-path:polygon(0 17%,9% 25%,19% 11%,30% 26%,40% 12%,52% 27%,63% 12%,76% 25%,89% 10%,100% 22%,100% 100%,0 100%)}
+.sheet-mascot{position:absolute;left:50%;bottom:-4px;width:96px;height:112px;transform:translateX(-50%)}
+.sheet-mascot svg{display:block;width:100%;height:100%}
+@media(prefers-reduced-motion:reduce){.sheet-pull{display:none!important}}
 .loading{
   position:absolute;inset:0;display:grid;place-items:center;
   background:#071426;color:#c8d9ec;text-align:center;
@@ -162,12 +167,33 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   const hub=document.getElementById('gamesHub');
   const tabs=Array.from(document.querySelectorAll('.tab'));
   const loading=document.getElementById('loading');
-  // One small, static SVG bolt. The two app frames never move or reload.
-  const lightningOverlay=document.createElement('div');
-  lightningOverlay.className='lightning-overlay';
-  lightningOverlay.setAttribute('aria-hidden','true');
-  lightningOverlay.hidden=true;
-  stage.appendChild(lightningOverlay);
+
+  // A single static SVG mascot tugs the cloth edge of the outgoing screen.
+  // Only its small overlay translates; the apps remain mounted and stationary.
+  const sheetPull=document.createElement('div');
+  sheetPull.className='sheet-pull';
+  sheetPull.setAttribute('aria-hidden','true');
+  sheetPull.hidden=true;
+  sheetPull.innerHTML=[
+    '<div class="sheet-fold"></div>',
+    '<div class="sheet-mascot"><svg viewBox="0 0 96 112" aria-hidden="true">',
+    '<path d="M37 81 L31 99 Q36 104 43 100 L47 84 M58 84 L64 100 Q73 103 71 97 L65 81" fill="#17436d" stroke="#0a2d4d" stroke-width="3" stroke-linejoin="round"/>',
+    '<rect x="31" y="55" width="34" height="35" rx="14" fill="#267ab4" stroke="#0b365e" stroke-width="3"/>',
+    '<path d="M33 64 Q23 76 18 98 M63 64 Q75 76 78 98" stroke="#0a355d" stroke-width="12" stroke-linecap="round" fill="none"/>',
+    '<path d="M33 64 Q23 76 18 98 M63 64 Q75 76 78 98" stroke="#63bff2" stroke-width="7" stroke-linecap="round" fill="none"/>',
+    '<path d="M25 38 Q24 12 48 12 Q72 12 71 38 L68 52 Q63 65 48 65 Q33 65 28 52 Z" fill="#267db9" stroke="#0b3b64" stroke-width="3"/>',
+    '<ellipse cx="48" cy="38" rx="18" ry="19" fill="#e7f8ff" stroke="#91d7ff" stroke-width="2"/>',
+    '<path d="M33 27 Q48 13 63 27" stroke="#a3e8ff" stroke-width="4" stroke-linecap="round" fill="none"/>',
+    '<ellipse cx="42" cy="38" rx="2.5" ry="3.5" fill="#0b395f"/>',
+    '<ellipse cx="54" cy="38" rx="2.5" ry="3.5" fill="#0b395f"/>',
+    '<path d="M43 48 Q48 53 53 48" stroke="#1d577a" stroke-width="2" fill="none" stroke-linecap="round"/>',
+    '<path d="M43 13 L48 5 L53 13" fill="#6ec9fc" stroke="#0c4674" stroke-width="2"/>',
+    '<circle cx="48" cy="5" r="3" fill="#f5fdff"/>',
+    '<circle cx="18" cy="100" r="6.5" fill="#edfaff" stroke="#307faf" stroke-width="2"/>',
+    '<circle cx="78" cy="100" r="6.5" fill="#edfaff" stroke="#307faf" stroke-width="2"/>',
+    '</svg></div>'
+  ].join('');
+  stage.appendChild(sheetPull);
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const frames=new Map(),ready=new Set();
   let current='voltes',activeGame=null,warmupStarted=false;
@@ -176,81 +202,27 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   function activeScreen(){return current==='games'&&!activeGame?hub:frames.get(activeKey())||null}
   function clearWipe(){
     ++wipeVersion;
+    for(const animation of wipeAnimations)animation.cancel();
+    wipeAnimations=[];
     for(const frame of frames.values())frame.classList.remove('is-leaving');
     hub.classList.remove('is-leaving');
     hub.hidden=!(current==='games'&&!activeGame);
-    lightningOverlay.hidden=true;
-    for(const animation of wipeAnimations)animation.cancel();
-    wipeAnimations=[];
-    lightningOverlay.replaceChildren();
+    sheetPull.hidden=true;
   }
-  function prepareBolt(){
-    const w=stage.clientWidth,h=stage.clientHeight;
-    if(w<100||h<100)return false;
-    const ns='http://www.w3.org/2000/svg';
-    const svg=document.createElementNS(ns,'svg');
-    svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
-    svg.setAttribute('preserveAspectRatio','none');
-    svg.setAttribute('aria-hidden','true');
-    const points=[];
-    let x=w*(.43+Math.random()*.14);
-    const segments=Math.max(18,Math.min(45,Math.round(h/23)));
-    for(let i=0;i<=segments;i++){
-      const y=(h+4)*i/segments;
-      if(i)x=Math.max(w*.26,Math.min(w*.74,x+(Math.random()-.5)*36));
-      points.push({x,y});
-    }
-    const main=points.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
-    // A few short branches attach to this single main lightning bolt.
-    const branches=[];
-    for(const [index,fork] of [.22,.47,.72,.84].entries()){
-      const p=points[Math.round(segments*fork)];
-      let bx=p.x,by=p.y;
-      const side=index%2===0?-1:1;
-      let d=`M${bx.toFixed(1)} ${by.toFixed(1)}`;
-      for(let j=0;j<4;j++){
-        bx+=side*(12+Math.random()*11)+(Math.random()-.5)*9;
-        by+=12+Math.random()*10;
-        d+=` L${bx.toFixed(1)} ${Math.min(h,by).toFixed(1)}`;
-      }
-      branches.push(d);
-    }
-    const branchPath=branches.join(' ');
-    function path(d,color,width,opacity){
-      const p=document.createElementNS(ns,'path');
-      p.setAttribute('d',d);
-      p.setAttribute('fill','none');
-      p.setAttribute('stroke',color);
-      p.setAttribute('stroke-width',String(width));
-      p.setAttribute('stroke-opacity',String(opacity));
-      p.setAttribute('stroke-linecap','round');
-      p.setAttribute('stroke-linejoin','round');
-      svg.appendChild(p);
-    }
-    // Layered strokes imitate an electric-blue aura without any blur/filter.
-    path(main,'#157ce7',15,.24);
-    path(branchPath,'#258bf4',7,.21);
-    path(main,'#65cbff',6,.63);
-    path(branchPath,'#93dfff',2.2,.82);
-    path(main,'#f0fcff',2.5,1);
-    lightningOverlay.replaceChildren(svg);
-    return true;
-  }
-  function playLightningWipe(outgoing){
-    if(!prepareBolt())return;
-    lightningOverlay.hidden=false;
-    const duration=620;
+  function playSheetPull(outgoing){
+    const height=stage.clientHeight;
+    if(height<100)return;
+    sheetPull.hidden=false;
     const version=++wipeVersion;
-    const options={duration,easing:'linear',fill:'both'};
+    const options={duration:690,easing:'cubic-bezier(.42,.04,.46,1)',fill:'both'};
     wipeAnimations=[
       outgoing.animate([
-        {clipPath:'inset(0 0 0% 0)'},
+        {clipPath:'inset(0% 0 0 0)'},
         {clipPath:'inset(100% 0 0 0)'}
       ],options),
-      lightningOverlay.animate([
-        {clipPath:'inset(0 0 100% 0)',opacity:.98,offset:0},
-        {clipPath:'inset(0 0 10% 0)',opacity:1,offset:.9},
-        {clipPath:'inset(0 0 0% 0)',opacity:0,offset:1}
+      sheetPull.animate([
+        {transform:'translate3d(0,0,0)'},
+        {transform:'translate3d(0,'+height+'px,0)'}
       ],options)
     ];
     Promise.all(wipeAnimations.map(a=>a.finished.catch(()=>{}))).then(()=>{
@@ -299,7 +271,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     const animate=!!previous&&previous!==incoming&&(!active||ready.has(active))&&
       stage.clientWidth>=100&&stage.clientHeight>=100&&
       !reducedMotion.matches&&document.visibilityState==='visible'&&
-      typeof previous.animate==='function'&&typeof lightningOverlay.animate==='function';
+      typeof previous.animate==='function'&&typeof sheetPull.animate==='function';
     for(const [id,frame] of frames){
       const visible=id===active;
       const leaving=animate&&frame===previous;
@@ -315,7 +287,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     loading.hidden=!active||ready.has(active);
     if(!loading.hidden)loading.textContent='Άνοιγμα '+apps[active].name+'…';
     notifyGameVisibility();
-    if(animate)playLightningWipe(previous);
+    if(animate)playSheetPull(previous);
   }
   function select(key){
     if(key!=='games'&&(!apps[key]||GAMES.has(key)))return;
@@ -334,7 +306,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   tabs.forEach(tab=>tab.addEventListener('click',()=>select(tab.dataset.app)));
   hub.querySelectorAll('[data-game]').forEach(btn=>
     btn.addEventListener('click',()=>openGame(btn.dataset.game)));
-  document.addEventListener('visibilitychange',notifyGameVisibility);
+  document.addEventListener('visibilitychange',()=>{
+    notifyGameVisibility();
+    if(document.visibilityState==='hidden')clearWipe();
+  });
   window.addEventListener('pagehide',()=>{
     for(const key of GAMES){
       frames.get(key)?.contentWindow?.postMessage({type:key+':visibility',active:false},location.origin);
