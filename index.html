@@ -58,15 +58,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
  .tab{font-size:clamp(8px,2.55vw,10px);letter-spacing:-.045em;border-radius:9px}
 }
 .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#061424;isolation:isolate}
-.app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424;backface-visibility:hidden}
-.app-frame.active,.app-frame.is-leaving{display:block}
-.app-frame.active{z-index:2}
-.app-frame.is-leaving{z-index:1;pointer-events:none}
-.app-frame.is-entering,.app-frame.is-leaving{will-change:transform,opacity}
+.app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
+.app-frame.active{display:block}
 .transition-sheen{
-  position:absolute;top:0;bottom:0;left:-50%;width:46%;z-index:3;
-  pointer-events:none;opacity:0;transform:translate3d(-100%,0,0) skewX(-17deg);
-  background:linear-gradient(90deg,transparent,rgba(33,148,255,.07) 30%,rgba(170,232,255,.26) 50%,rgba(42,157,255,.08) 70%,transparent)
+  position:absolute;top:0;bottom:0;left:0;width:64px;z-index:3;
+  pointer-events:none;opacity:0;transform:translate3d(-100px,0,0);
+  background:linear-gradient(90deg,transparent,rgba(27,143,255,.10) 24%,rgba(141,217,255,.28) 50%,rgba(27,143,255,.10) 76%,transparent)
 }
 .loading{
   position:absolute;inset:0;display:grid;place-items:center;
@@ -84,8 +81,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   padding:22px 12px 28px;color:#f1f8ff;text-align:center
 }
 .games-hub[hidden]{display:none!important}
-.games-hub.is-leaving{z-index:1;pointer-events:none}
-.games-hub.is-entering,.games-hub.is-leaving{will-change:transform,opacity}
 .games-shell{width:min(100%,680px);margin:auto}
 .games-kicker{font-size:10px;letter-spacing:.18em;color:#8fcaff;font-weight:900}
 .games-heading h1{font-size:clamp(23px,5vw,32px);margin:7px 0 5px}
@@ -174,48 +169,20 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const frames=new Map(),ready=new Set();
   let current='voltes',activeGame=null,warmupStarted=false;
-  let transitionAnimations=[],transitionToken=0;
+  let glowAnimation=null;
   function activeKey(){return current==='games'?activeGame:current}
   function activeScreen(){return current==='games'&&!activeGame?hub:frames.get(activeKey())||null}
-  function resetTransition(){
-    ++transitionToken;
-    for(const animation of transitionAnimations)animation.cancel();
-    transitionAnimations=[];
-    for(const frame of frames.values())frame.classList.remove('is-leaving','is-entering');
-    hub.classList.remove('is-leaving','is-entering');
-    hub.hidden=!(current==='games'&&!activeGame);
-    sheen.style.opacity='';
-  }
-  function animateTransition(outgoing,incoming,oldTabIndex){
-    const newTabIndex=tabs.findIndex(tab=>tab.dataset.app===current);
-    const dir=newTabIndex===oldTabIndex?(incoming===hub?-1:1):(newTabIndex>oldTabIndex?1:-1);
-    const ease='cubic-bezier(.22,1,.36,1)';
-    const duration=420;
-    const token=++transitionToken;
-    transitionAnimations=[
-      outgoing.animate([
-        {transform:'perspective(1100px) translate3d(0,0,0) rotateY(0deg) scale(1)',opacity:1},
-        {transform:`perspective(1100px) translate3d(${-dir*15}%,0,0) rotateY(${dir*5}deg) scale(.965)`,opacity:0}
-      ],{duration:duration-70,easing:'cubic-bezier(.4,0,.8,1)',fill:'both'}),
-      incoming.animate([
-        {transform:`perspective(1100px) translate3d(${dir*19}%,0,0) rotateY(${-dir*6}deg) scale(.965)`,opacity:.25},
-        {transform:'perspective(1100px) translate3d(0,0,0) rotateY(0deg) scale(1)',opacity:1}
-      ],{duration,easing:ease,fill:'both'}),
-      sheen.animate([
-        {transform:`translate3d(${dir<0?320:-100}%,0,0) skewX(-17deg)`,opacity:0,offset:0},
-        {opacity:.85,offset:.44},
-        {transform:`translate3d(${dir<0?-100:320}%,0,0) skewX(-17deg)`,opacity:0,offset:1}
-      ],{duration,easing:'ease-out',fill:'both'})
-    ];
-    const selected=tabs[newTabIndex];
-    if(selected)transitionAnimations.push(selected.animate([
-      {transform:'scale(.96) translateY(1px)'},
-      {transform:'scale(1.055) translateY(-2px)',offset:.48},
-      {transform:'scale(1) translateY(0)'}
-    ],{duration:310,easing:ease}));
-    Promise.all(transitionAnimations.map(animation=>animation.finished.catch(()=>{}))).then(()=>{
-      if(token===transitionToken)resetTransition();
-    });
+  // Animate only a narrow decorative streak, never the app iframes.
+  function playGlow(){
+    if(reducedMotion.matches||document.visibilityState!=='visible'||typeof sheen.animate!=='function')return;
+    if(glowAnimation)glowAnimation.cancel();
+    const animation=sheen.animate([
+      {transform:'translate3d(-100px,0,0)',opacity:0},
+      {opacity:.9,offset:.42},
+      {transform:'translate3d(calc(100vw + 100px),0,0)',opacity:0}
+    ],{duration:260,easing:'ease-out'});
+    glowAnimation=animation;
+    animation.finished.then(()=>{if(glowAnimation===animation)glowAnimation=null},()=>{});
   }
   function notifyGameVisibility(){
     for(const key of GAMES){
@@ -247,50 +214,40 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     stage.insertBefore(frame,loading);
     return frame;
   }
-  function show(previous=null,oldTabIndex=-1){
-    resetTransition();
+  function show(previous=null){
     const active=activeKey();
-    const showHub=current==='games'&&!activeGame;
     for(const tab of tabs){
       tab.setAttribute('aria-selected',tab.dataset.app===current?'true':'false');
     }
-    const incoming=active?createFrame(active):hub;
-    const animate=!!previous&&previous!==incoming&&!reducedMotion.matches&&
-      document.visibilityState==='visible'&&typeof incoming.animate==='function';
+    if(active)createFrame(active);
+    const incoming=active?frames.get(active):hub;
     for(const [id,frame] of frames){
       const visible=id===active;
-      const leaving=animate&&frame===previous;
       frame.classList.toggle('active',visible);
-      frame.classList.toggle('is-leaving',leaving);
-      frame.classList.toggle('is-entering',animate&&visible);
       if(visible)frame.removeAttribute('inert');
       else frame.setAttribute('inert','');
       frame.setAttribute('aria-hidden',visible?'false':'true');
     }
-    hub.hidden=!showHub&&!(animate&&previous===hub);
-    hub.classList.toggle('is-leaving',animate&&previous===hub);
-    hub.classList.toggle('is-entering',animate&&incoming===hub);
-    hub.setAttribute('aria-hidden',showHub?'false':'true');
+    hub.hidden=!!active;
+    hub.setAttribute('aria-hidden',active?'true':'false');
     loading.hidden=!active||ready.has(active);
     if(!loading.hidden)loading.textContent='Άνοιγμα '+apps[active].name+'…';
     notifyGameVisibility();
-    if(animate)animateTransition(previous,incoming,oldTabIndex);
+    if(previous&&previous!==incoming)playGlow();
   }
   function select(key){
     if(key!=='games'&&(!apps[key]||GAMES.has(key)))return;
     const previous=activeScreen();
-    const oldTabIndex=tabs.findIndex(tab=>tab.dataset.app===current);
     current=key;
     activeGame=null;
-    show(previous,oldTabIndex);
+    show(previous);
   }
   function openGame(key){
     if(!GAMES.has(key))return;
     const previous=activeScreen();
-    const oldTabIndex=tabs.findIndex(tab=>tab.dataset.app===current);
     current='games';
     activeGame=key;
-    show(previous,oldTabIndex);
+    show(previous);
   }
   tabs.forEach(tab=>tab.addEventListener('click',()=>select(tab.dataset.app)));
   hub.querySelectorAll('[data-game]').forEach(btn=>
