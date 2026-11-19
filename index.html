@@ -241,6 +241,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     hub.classList.remove('is-leaving');
     hub.hidden=!(current==='games'&&!activeGame);
     sheetPull.hidden=true;
+    // If the newly selected iframe is still loading, restore its spinner
+    // only after the curtain has fully cleared.
+    const active=activeKey();
+    loading.hidden=!active||ready.has(active);
   }
   function playSheetPull(outgoing){
     const height=stage.clientHeight;
@@ -313,7 +317,9 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     }
     if(active)createFrame(active);
     const incoming=active?frames.get(active):hub;
-    const animate=!!previous&&previous!==incoming&&(!active||ready.has(active))&&
+    // Show the mascot even when the destination has not yet finished loading.
+    // The loader stays behind the curtain and appears only afterwards if needed.
+    const animate=!!previous&&previous!==incoming&&
       stage.clientWidth>=100&&stage.clientHeight>=100&&
       !reducedMotion.matches&&document.visibilityState==='visible'&&
       typeof previous.animate==='function'&&typeof sheetPull.animate==='function';
@@ -329,8 +335,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     hub.hidden=!!active&&!(animate&&previous===hub);
     hub.classList.toggle('is-leaving',animate&&previous===hub);
     hub.setAttribute('aria-hidden',active?'true':'false');
-    loading.hidden=!active||ready.has(active);
-    if(!loading.hidden)loading.textContent='Άνοιγμα '+apps[active].name+'…';
+    loading.hidden=animate||!active||ready.has(active);
+    if(active&&!ready.has(active))loading.textContent='Άνοιγμα '+apps[active].name+'…';
     notifyGameVisibility();
     if(animate)playSheetPull(previous);
   }
