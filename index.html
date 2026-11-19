@@ -60,10 +60,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#061424;isolation:isolate}
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block;z-index:1}
-.app-frame.is-leaving{display:block;z-index:3;pointer-events:none}
-.curtain-black{position:absolute;inset:0;z-index:2;background:#000;pointer-events:none}
-.curtain-black[hidden]{display:none!important}
-.sheet-pull{position:absolute;top:0;left:0;right:0;height:0;z-index:4;pointer-events:none}
+.app-frame.is-leaving{display:block;z-index:2;pointer-events:none}
+.sheet-pull{position:absolute;top:0;left:0;right:0;height:0;z-index:3;pointer-events:none}
 .sheet-pull[hidden]{display:none!important}
 .sheet-fold{position:absolute;top:-4px;left:0;right:0;height:8px;
   background:linear-gradient(180deg,#a1d6f4 0%,#4b95c7 42%,#173e64 100%);
@@ -77,7 +75,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .loading{
   position:absolute;inset:0;display:grid;place-items:center;
   background:#071426;color:#c8d9ec;text-align:center;
-  padding:18px;z-index:5;font-size:13px;font-weight:650;pointer-events:none
+  padding:18px;z-index:4;font-size:13px;font-weight:650;pointer-events:none
 }
 .loading[hidden]{display:none}
 .loading span{display:block;width:30px;height:30px;border:3px solid #355c83;border-top-color:#a3d8ff;border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
@@ -90,7 +88,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   padding:22px 12px 28px;color:#f1f8ff;text-align:center
 }
 .games-hub[hidden]{display:none!important}
-.games-hub.is-leaving{z-index:3;pointer-events:none}
+.games-hub.is-leaving{z-index:2;pointer-events:none}
 .games-shell{width:min(100%,680px);margin:auto}
 .games-kicker{font-size:10px;letter-spacing:.18em;color:#8fcaff;font-weight:900}
 .games-heading h1{font-size:clamp(23px,5vw,32px);margin:7px 0 5px}
@@ -214,13 +212,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     '<rect x="38" y="70" width="27" height="8" rx="4" fill="#0e3c66" stroke="#82d1ff" stroke-width="2"/>',
     '</svg></div>'
   ].join('');
-  // Solid black beneath the departing screen, revealed as the astronaut descends.
-  // At the very end it fades out to reveal the already loaded next app.
-  const curtainBlack=document.createElement('div');
-  curtainBlack.className='curtain-black';
-  curtainBlack.setAttribute('aria-hidden','true');
-  curtainBlack.hidden=true;
-  stage.insertBefore(curtainBlack,sheetPull);
+  stage.appendChild(sheetPull);
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const frames=new Map(),ready=new Set();
   let current='voltes',activeGame=null,warmupStarted=false;
@@ -235,13 +227,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     hub.classList.remove('is-leaving');
     hub.hidden=!(current==='games'&&!activeGame);
     sheetPull.hidden=true;
-    curtainBlack.hidden=true;
   }
   function playSheetPull(outgoing){
     const height=stage.clientHeight;
     if(height<100)return;
-    // Old app is above black; new app remains underneath both, fully loaded.
-    curtainBlack.hidden=false;
     sheetPull.hidden=false;
     const version=++wipeVersion;
     const options={duration:1100,easing:'cubic-bezier(.4,0,.2,1)',fill:'both'};
@@ -256,21 +245,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
       ],options)
     ];
     Promise.all(wipeAnimations.map(a=>a.finished.catch(()=>{}))).then(()=>{
-      if(wipeVersion!==version)return;
-      // Astronaut and old page are now gone, but black still conceals the new page.
-      for(const frame of frames.values())frame.classList.remove('is-leaving');
-      hub.classList.remove('is-leaving');
-      hub.hidden=!(current==='games'&&!activeGame);
-      sheetPull.hidden=true;
-      // Small, quiet fade-in without moving either application.
-      const fade=curtainBlack.animate([
-        {opacity:1},
-        {opacity:0}
-      ],{duration:160,easing:'ease-out',fill:'both'});
-      wipeAnimations.push(fade);
-      fade.finished.then(()=>{
-        if(wipeVersion===version)clearWipe();
-      },()=>{});
+      if(wipeVersion===version)clearWipe();
     });
   }
   function notifyGameVisibility(){
