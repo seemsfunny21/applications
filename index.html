@@ -61,18 +61,17 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block;z-index:1}
 .app-frame.is-leaving{display:block;z-index:3;pointer-events:none}
-/* 0.5-second horizontal cinematic shutter: black between the closing
-   and opening screens, without additional DOM, images or heavy blur effects. */
+/* 0.6s vertical black curtain: down for 0.3s, up for 0.3s.
+   The old screen is hidden precisely when the curtain covers it entirely. */
 .stage.is-shutter-transition{background:#000}
 .stage.is-shutter-transition::after{
-  content:"";position:absolute;inset:0;z-index:2;background:#000;pointer-events:none;
-  animation:shutter-blackout 500ms linear both
+  content:"";position:absolute;inset:0;z-index:4;background:#000;pointer-events:none;
+  animation:vertical-black-curtain 600ms linear both
 }
-/* The outgoing image closes by 46%, followed by a short full-black hold.
-   At 53% the incoming view starts opening horizontally from the center. */
-@keyframes shutter-blackout{
-  0%,52.9%{opacity:1}
-  53%,100%{opacity:0}
+@keyframes vertical-black-curtain{
+  0%{transform:translate3d(0,-100%,0)}
+  50%{transform:translate3d(0,0,0)}
+  100%{transform:translate3d(0,-100%,0)}
 }
 .loading{
   position:absolute;inset:0;display:grid;place-items:center;
@@ -197,34 +196,30 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     const active=activeKey();
     loading.hidden=!active||ready.has(active);
   }
-  function playCinematicShutter(outgoing,incoming){
+  function playVerticalBlackCurtain(outgoing){
     if(stage.clientWidth<100||stage.clientHeight<100)return;
-    // Only a genuine tab change animates. The initial load stays instant.
     stage.classList.add('is-shutter-transition');
     const version=++wipeVersion;
-    const options={duration:500,easing:'linear',fill:'both'};
     try {
       wipeAnimations=[
+        // The outgoing page stays visible during the downward wipe.
+        // Halfway through, the black sheet covers it completely and
+        // the new page is already behind it, ready for the upward reveal.
         outgoing.animate([
-          {clipPath:'inset(0% 0 0% 0)',offset:0},
-          {clipPath:'inset(49.5% 0 49.5% 0)',offset:.43},
-          {clipPath:'inset(50% 0 50% 0)',offset:.46},
-          {clipPath:'inset(50% 0 50% 0)',offset:1}
-        ],options),
-        incoming.animate([
-          {clipPath:'inset(50% 0 50% 0)',offset:0},
-          {clipPath:'inset(50% 0 50% 0)',offset:.53},
-          {clipPath:'inset(0% 0 0% 0)',offset:1}
-        ],options)
+          {opacity:1,offset:0},
+          {opacity:1,offset:.499},
+          {opacity:0,offset:.501},
+          {opacity:0,offset:1}
+        ],{duration:600,easing:'linear',fill:'both'})
       ];
     } catch (_) {
       if(wipeVersion===version)clearWipe();
       return;
     }
-    // Restore normal layout even if a tab changes or the animation stalls.
+    // Guard against suspended animation events or interrupted tab switches.
     wipeTimeout=setTimeout(()=>{
       if(wipeVersion===version)clearWipe();
-    },800);
+    },900);
     Promise.all(wipeAnimations.map(a=>a.finished.catch(()=>{}))).then(()=>{
       if(wipeVersion===version)clearWipe();
     });
@@ -268,7 +263,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     }
     if(active)createFrame(active);
     const incoming=active?frames.get(active):hub;
-    // Hide loading behind the two-second shutter if the destination isn't ready yet.
+    // Keep the loader behind the curtain while the incoming iframe finishes loading.
     const animate=!!previous&&previous!==incoming&&
       stage.clientWidth>=100&&stage.clientHeight>=100&&
       !reducedMotion.matches&&document.visibilityState==='visible'&&
@@ -288,7 +283,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     loading.hidden=animate||!active||ready.has(active);
     if(active&&!ready.has(active))loading.textContent='Άνοιγμα '+apps[active].name+'…';
     notifyGameVisibility();
-    if(animate)playCinematicShutter(previous,incoming);
+    if(animate)playVerticalBlackCurtain(previous);
   }
   function select(key){
     if(key!=='games'&&(!apps[key]||GAMES.has(key)))return;
