@@ -61,17 +61,17 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block;z-index:1}
 .app-frame.is-leaving{display:block;z-index:3;pointer-events:none}
-/* 0.6s vertical black curtain: down for 0.3s, up for 0.3s.
-   The old screen is hidden precisely when the curtain covers it entirely. */
+/* 0.6s vertical black curtain: covers top-to-bottom in 0.3s,
+   then reveals the new application top-to-bottom in another 0.3s. */
 .stage.is-shutter-transition{background:#000}
 .stage.is-shutter-transition::after{
   content:"";position:absolute;inset:0;z-index:4;background:#000;pointer-events:none;
   animation:vertical-black-curtain 600ms linear both
 }
 @keyframes vertical-black-curtain{
-  0%{transform:translate3d(0,-100%,0)}
-  50%{transform:translate3d(0,0,0)}
-  100%{transform:translate3d(0,-100%,0)}
+  0%{transform:translate3d(0,-100%,0);clip-path:inset(0 0 0 0)}
+  50%{transform:translate3d(0,0,0);clip-path:inset(0 0 0 0)}
+  100%{transform:translate3d(0,0,0);clip-path:inset(100% 0 0 0)}
 }
 .loading{
   position:absolute;inset:0;display:grid;place-items:center;
@@ -204,7 +204,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
       wipeAnimations=[
         // The outgoing page stays visible during the downward wipe.
         // Halfway through, the black sheet covers it completely and
-        // the new page is already behind it, ready for the upward reveal.
+        // the new page is already behind it, revealed from top to bottom.
         outgoing.animate([
           {opacity:1,offset:0},
           {opacity:1,offset:.499},
