@@ -61,29 +61,17 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block;z-index:1}
 .app-frame.is-leaving{display:block;z-index:3;pointer-events:none}
-/* Black exists only while an actual transition is running: no persistent overlay. */
+/* Lightweight black curtain during tab changes; no astronaut or other overlay. */
 .stage.is-black-transition::after{
   content:"";position:absolute;inset:0;z-index:2;background:#000;pointer-events:none;
-  animation:reveal-behind-astronaut 1100ms linear both
+  animation:reveal-behind-black 1100ms linear both
 }
-/* With the astronaut's ease curve, 43% elapsed time is ~67% of the descent.
-   Hold black until that moment, then slide it down to reveal the new app
-   from the top. Only transform animates: no fade or additional repaint loop. */
-@keyframes reveal-behind-astronaut{
+/* Black holds while the old view withdraws; the next app appears from the
+   top down for the final part of the transition. */
+@keyframes reveal-behind-black{
   0%,43%{transform:translate3d(0,0,0)}
   100%{transform:translate3d(0,100%,0)}
 }
-.sheet-pull{position:absolute;top:0;left:0;right:0;height:0;z-index:4;pointer-events:none}
-.sheet-pull[hidden]{display:none!important}
-.sheet-fold{position:absolute;top:-4px;left:0;right:0;height:8px;
-  background:linear-gradient(180deg,#a1d6f4 0%,#4b95c7 42%,#173e64 100%);
-  box-shadow:0 0 5px rgba(75,163,230,.22)}
-.sheet-fold:after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(5,27,51,.75)}
-.sheet-rope{position:absolute;left:calc(50% + 30px);bottom:0;width:1px;height:190px;
-  background:linear-gradient(180deg,rgba(92,163,207,.15),rgba(138,197,231,.55));opacity:.65}
-.sheet-mascot{position:absolute;left:50%;bottom:0;width:128px;height:132px;transform:translateX(-50%)}
-.sheet-mascot svg{display:block;width:100%;height:100%}
-@media(prefers-reduced-motion:reduce){.sheet-pull{display:none!important}}
 .loading{
   position:absolute;inset:0;display:grid;place-items:center;
   background:#071426;color:#c8d9ec;text-align:center;
@@ -187,46 +175,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 
   // A single blue astronaut grips a rope that pulls the old screen down.
   // Keep the native app iframes stationary; only animate a clipped outgoing layer.
-  const sheetPull=document.createElement('div');
-  sheetPull.className='sheet-pull';
-  sheetPull.setAttribute('aria-hidden','true');
-  sheetPull.hidden=true;
-  sheetPull.innerHTML=[
-    '<div class="sheet-rope"></div>',
-    '<div class="sheet-fold"></div>',
-    '<div class="sheet-mascot"><svg viewBox="0 0 128 132" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">',
-    '<defs>',
-    '<linearGradient id="astro-blue" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#83d7ff"/><stop offset=".42" stop-color="#277bbb"/><stop offset="1" stop-color="#11426f"/></linearGradient>',
-    '<linearGradient id="astro-helmet" x1="0" x2=".9" y1="0" y2="1"><stop stop-color="#8ed9ff"/><stop offset=".55" stop-color="#347bb7"/><stop offset="1" stop-color="#0b325d"/></linearGradient>',
-    '<linearGradient id="astro-visor" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#173854"/><stop offset=".5" stop-color="#040c1e"/><stop offset="1" stop-color="#092d56"/></linearGradient>',
-    '</defs>',
-    '<path d="M42 96 L36 115 Q34 124 41 127 L49 127 Q54 122 53 116 L55 98 Z" fill="#246aa5" stroke="#082e56" stroke-width="3"/>',
-    '<path d="M64 98 L66 118 Q68 128 76 126 L81 123 Q85 118 77 108 L73 93 Z" fill="#19568d" stroke="#082e56" stroke-width="3"/>',
-    '<path d="M35 122 Q43 117 53 123 L52 129 Q42 132 34 128 Z M65 124 Q74 117 82 121 L82 128 Q73 132 65 128 Z" fill="#82c9f6" stroke="#0a315a" stroke-width="2"/>',
-    '<rect x="67" y="65" width="21" height="31" rx="7" fill="#0d3b67" stroke="#66b7e8" stroke-width="3"/>',
-    '<path d="M35 76 Q29 89 39 104 Q52 113 72 102 Q80 88 69 72 Z" fill="url(#astro-blue)" stroke="#0b3968" stroke-width="3.5"/>',
-    '<path d="M37 98 Q52 104 71 96" fill="none" stroke="#a2ddff" stroke-opacity=".5" stroke-width="2"/>',
-    '<rect x="47" y="83" width="20" height="15" rx="4" fill="#0c365c" stroke="#8fd8ff" stroke-width="2"/>',
-    '<circle cx="53" cy="90" r="3" fill="#94e7ff"/><path d="M58 88 H63 M58 93 H61" stroke="#69caff" stroke-width="1.5"/>',
-    '<path d="M38 77 Q26 80 22 92 L20 102" fill="none" stroke="#0d3760" stroke-width="14" stroke-linecap="round"/>',
-    '<path d="M38 77 Q26 80 22 92 L20 102" fill="none" stroke="#419bda" stroke-width="9" stroke-linecap="round"/>',
-    '<path d="M68 77 Q82 70 86 58 L92 43" fill="none" stroke="#0a3157" stroke-width="15" stroke-linecap="round"/>',
-    '<path d="M68 77 Q82 70 86 58 L92 43" fill="none" stroke="#338ac7" stroke-width="10" stroke-linecap="round"/>',
-    '<path d="M16 98 Q20 94 26 100 L25 107 Q19 113 14 107 Z" fill="#a4defc" stroke="#0d4275" stroke-width="2.5"/>',
-    '<path d="M89 39 Q94 35 99 40 L100 48 Q95 54 90 49 Q86 45 89 39 Z" fill="#b4ebff" stroke="#0b447a" stroke-width="2.5"/>',
-    '<path d="M93 40 V48" stroke="#0d4b78" stroke-width="2" stroke-linecap="round"/>',
-    '<path d="M25 42 C20 24 31 9 51 8 C73 6 85 24 81 46 L76 65 Q68 79 52 80 Q35 79 28 65 Z" fill="url(#astro-helmet)" stroke="#0a3157" stroke-width="4"/>',
-    '<path d="M27 35 Q29 13 52 11 Q72 12 80 30" fill="none" stroke="#c1eeff" stroke-opacity=".75" stroke-width="3"/>',
-    '<path d="M30 37 Q34 22 52 21 Q70 21 75 38 Q78 56 67 66 Q54 74 40 66 Q29 59 30 37 Z" fill="#86c9f3" stroke="#123e69" stroke-width="3"/>',
-    '<path d="M34 37 Q38 24 53 24 Q68 24 71 39 Q74 56 64 63 Q51 68 41 61 Q32 55 34 37 Z" fill="url(#astro-visor)"/>',
-    '<path d="M37 36 Q44 26 55 27" fill="none" stroke="#bbf4ff" stroke-opacity=".75" stroke-width="3" stroke-linecap="round"/>',
-    '<path d="M62 32 Q66 36 66 42" fill="none" stroke="#5bd0ff" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/>',
-    '<circle cx="28" cy="58" r="10" fill="#0b325e" stroke="#b5eaff" stroke-width="3"/>',
-    '<circle cx="28" cy="58" r="5" fill="#4a9acc" stroke="#0c416c" stroke-width="2"/>',
-    '<rect x="38" y="70" width="27" height="8" rx="4" fill="#0e3c66" stroke="#82d1ff" stroke-width="2"/>',
-    '</svg></div>'
-  ].join('');
-  stage.appendChild(sheetPull);
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const frames=new Map(),ready=new Set();
   let current='voltes',activeGame=null,warmupStarted=false;
@@ -242,41 +190,33 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     for(const frame of frames.values())frame.classList.remove('is-leaving');
     hub.classList.remove('is-leaving');
     hub.hidden=!(current==='games'&&!activeGame);
-    sheetPull.hidden=true;
     // If the newly selected iframe is still loading, restore its spinner
     // only after the curtain has fully cleared.
     const active=activeKey();
     loading.hidden=!active||ready.has(active);
   }
-  function playSheetPull(outgoing){
+  function playBlackTransition(outgoing){
     const height=stage.clientHeight;
     if(height<100)return;
-    // Only active during a real, ready-to-display tab switch; never at startup.
-    sheetPull.hidden=false;
+    // Active only for an actual tab switch: never at initial app startup.
     stage.classList.add('is-black-transition');
     const version=++wipeVersion;
-    const options={duration:1100,easing:'cubic-bezier(.4,0,.2,1)',fill:'both'};
     try {
       wipeAnimations=[
         outgoing.animate([
           {clipPath:'inset(0% 0 0 0)'},
           {clipPath:'inset(100% 0 0 0)'}
-        ],options),
-        sheetPull.animate([
-          {transform:'translate3d(0,0,0)'},
-          {transform:'translate3d(0,'+height+'px,0)'}
-        ],options)
+        ],{duration:1100,easing:'cubic-bezier(.4,0,.2,1)',fill:'both'})
       ];
     } catch (_) {
       if(wipeVersion===version)clearWipe();
       return;
     }
-    // Fail-safe cleanup if the browser suspends animation completion events.
+    // Safe cleanup on completion, cancellation, or suspended animation.
     wipeTimeout=setTimeout(()=>{
       if(wipeVersion===version)clearWipe();
     },1450);
     Promise.all(wipeAnimations.map(a=>a.finished.catch(()=>{}))).then(()=>{
-      // The black disappears instantly as the astronaut exits: no fade, no wait.
       if(wipeVersion===version)clearWipe();
     });
   }
@@ -319,12 +259,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     }
     if(active)createFrame(active);
     const incoming=active?frames.get(active):hub;
-    // Show the mascot even when the destination has not yet finished loading.
-    // The loader stays behind the curtain and appears only afterwards if needed.
+    // Keep the black curtain even if the destination iframe is still loading.
     const animate=!!previous&&previous!==incoming&&
       stage.clientWidth>=100&&stage.clientHeight>=100&&
       !reducedMotion.matches&&document.visibilityState==='visible'&&
-      typeof previous.animate==='function'&&typeof sheetPull.animate==='function';
+      typeof previous.animate==='function';
     for(const [id,frame] of frames){
       const visible=id===active;
       const leaving=animate&&frame===previous;
@@ -340,7 +279,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     loading.hidden=animate||!active||ready.has(active);
     if(active&&!ready.has(active))loading.textContent='Άνοιγμα '+apps[active].name+'…';
     notifyGameVisibility();
-    if(animate)playSheetPull(previous);
+    if(animate)playBlackTransition(previous);
   }
   function select(key){
     if(key!=='games'&&(!apps[key]||GAMES.has(key)))return;
