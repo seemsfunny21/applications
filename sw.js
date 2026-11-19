@@ -2,7 +2,7 @@
    The PWAs share a GitHub Pages origin, so caches are strictly namespaced.
    This service worker controls ONLY /applications/. */
 const PREFIX = "applications-shell-";
-const CACHE = PREFIX + "v15-classic-layout";
+const CACHE = PREFIX + "v16-games-offline-fallback";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest",
   "./icon.svg", "./icon-192.png", "./icon-512.png"];
 
@@ -29,19 +29,23 @@ self.addEventListener("fetch", event => {
   if (req.method !== "GET" || url.origin !== scope.origin ||
       !url.pathname.startsWith(scope.pathname)) return;
 
-  // Always request the latest launcher HTML online. Keep a saved fallback
-  // for offline opening, without touching any of the independent apps' data.
+  // Separate the launcher fallback from each nested game's navigation.
+  // Never overwrite the launcher with a game's HTML response.
   if(req.mode==="navigate"){
     event.respondWith((async()=>{
       const cache=await caches.open(CACHE);
+      const launcher=url.pathname===scope.pathname||
+        url.pathname===scope.pathname+"index.html";
       try{
         const response=await fetch(req,{cache:"no-store"});
         if(response.ok&&response.type==="basic"){
-          try{await cache.put("./index.html",response.clone())}catch(_){}
+          try{await cache.put(launcher?"./index.html":req,response.clone())}catch(_){}
         }
         return response;
       }catch{
-        return await cache.match("./index.html")||await cache.match("./")||Response.error();
+        return await cache.match(req)||
+          (launcher?await cache.match("./index.html")||await cache.match("./"):null)||
+          Response.error();
       }
     })());
     return;
