@@ -59,15 +59,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 }
 .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#061424;isolation:isolate}
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
-.app-frame.active{display:block}
-.transition-sheen{
-  position:absolute;top:0;bottom:0;left:0;width:112px;z-index:3;
-  pointer-events:none;opacity:0;transform:translate3d(-150px,0,0) skewX(-12deg);
-  background:linear-gradient(90deg,
-    transparent 0%,rgba(24,123,241,.07) 15%,rgba(46,165,255,.24) 32%,
-    rgba(174,232,255,.75) 48%,rgba(229,250,255,.9) 50%,
-    rgba(174,232,255,.65) 52%,rgba(40,155,255,.2) 70%,transparent 100%)
-}
+.app-frame.active{display:block;z-index:1}
+.app-frame.is-leaving{display:block;z-index:2;pointer-events:none}
+.lightning-overlay{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;contain:paint}
+.lightning-overlay[hidden]{display:none!important}
+.lightning-overlay svg{display:block;width:100%;height:100%}
 .loading{
   position:absolute;inset:0;display:grid;place-items:center;
   background:#071426;color:#c8d9ec;text-align:center;
@@ -78,12 +74,13 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 .games-hub{
-  position:absolute;inset:0;z-index:2;overflow-y:auto;
+  position:absolute;inset:0;z-index:1;overflow-y:auto;
   display:flex;align-items:center;justify-content:center;
   background:radial-gradient(ellipse at 50% 5%,#183d6d 0%,#071426 70%);
   padding:22px 12px 28px;color:#f1f8ff;text-align:center
 }
 .games-hub[hidden]{display:none!important}
+.games-hub.is-leaving{z-index:2;pointer-events:none}
 .games-shell{width:min(100%,680px);margin:auto}
 .games-kicker{font-size:10px;letter-spacing:.18em;color:#8fcaff;font-weight:900}
 .games-heading h1{font-size:clamp(23px,5vw,32px);margin:7px 0 5px}
@@ -165,29 +162,100 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   const hub=document.getElementById('gamesHub');
   const tabs=Array.from(document.querySelectorAll('.tab'));
   const loading=document.getElementById('loading');
-  const sheen=document.createElement('div');
-  sheen.className='transition-sheen';
-  sheen.setAttribute('aria-hidden','true');
-  stage.appendChild(sheen);
+  // One small, static SVG bolt. The two app frames never move or reload.
+  const lightningOverlay=document.createElement('div');
+  lightningOverlay.className='lightning-overlay';
+  lightningOverlay.setAttribute('aria-hidden','true');
+  lightningOverlay.hidden=true;
+  stage.appendChild(lightningOverlay);
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const frames=new Map(),ready=new Set();
   let current='voltes',activeGame=null,warmupStarted=false;
-  let glowAnimation=null;
+  let wipeAnimations=[],wipeVersion=0;
   function activeKey(){return current==='games'?activeGame:current}
   function activeScreen(){return current==='games'&&!activeGame?hub:frames.get(activeKey())||null}
-  // Animate only a narrow decorative streak, never the app iframes.
-  function playGlow(){
-    if(reducedMotion.matches||document.visibilityState!=='visible'||typeof sheen.animate!=='function')return;
-    if(glowAnimation)glowAnimation.cancel();
-    // The new app is already visible; animate only the slim blue light streak.
-    const animation=sheen.animate([
-      {transform:'translate3d(-150px,0,0) skewX(-12deg)',opacity:0,offset:0},
-      {opacity:1,offset:.16},
-      {opacity:1,offset:.84},
-      {transform:'translate3d(calc(100vw + 150px),0,0) skewX(-12deg)',opacity:0,offset:1}
-    ],{duration:650,easing:'linear'});
-    glowAnimation=animation;
-    animation.finished.then(()=>{if(glowAnimation===animation)glowAnimation=null},()=>{});
+  function clearWipe(){
+    ++wipeVersion;
+    for(const frame of frames.values())frame.classList.remove('is-leaving');
+    hub.classList.remove('is-leaving');
+    hub.hidden=!(current==='games'&&!activeGame);
+    lightningOverlay.hidden=true;
+    for(const animation of wipeAnimations)animation.cancel();
+    wipeAnimations=[];
+    lightningOverlay.replaceChildren();
+  }
+  function prepareBolt(){
+    const w=stage.clientWidth,h=stage.clientHeight;
+    if(w<100||h<100)return false;
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+    svg.setAttribute('preserveAspectRatio','none');
+    svg.setAttribute('aria-hidden','true');
+    const points=[];
+    let x=w*(.43+Math.random()*.14);
+    const segments=Math.max(18,Math.min(45,Math.round(h/23)));
+    for(let i=0;i<=segments;i++){
+      const y=(h+4)*i/segments;
+      if(i)x=Math.max(w*.26,Math.min(w*.74,x+(Math.random()-.5)*36));
+      points.push({x,y});
+    }
+    const main=points.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+    // A few short branches attach to this single main lightning bolt.
+    const branches=[];
+    for(const [index,fork] of [.22,.47,.72,.84].entries()){
+      const p=points[Math.round(segments*fork)];
+      let bx=p.x,by=p.y;
+      const side=index%2===0?-1:1;
+      let d=`M${bx.toFixed(1)} ${by.toFixed(1)}`;
+      for(let j=0;j<4;j++){
+        bx+=side*(12+Math.random()*11)+(Math.random()-.5)*9;
+        by+=12+Math.random()*10;
+        d+=` L${bx.toFixed(1)} ${Math.min(h,by).toFixed(1)}`;
+      }
+      branches.push(d);
+    }
+    const branchPath=branches.join(' ');
+    function path(d,color,width,opacity){
+      const p=document.createElementNS(ns,'path');
+      p.setAttribute('d',d);
+      p.setAttribute('fill','none');
+      p.setAttribute('stroke',color);
+      p.setAttribute('stroke-width',String(width));
+      p.setAttribute('stroke-opacity',String(opacity));
+      p.setAttribute('stroke-linecap','round');
+      p.setAttribute('stroke-linejoin','round');
+      svg.appendChild(p);
+    }
+    // Layered strokes imitate an electric-blue aura without any blur/filter.
+    path(main,'#157ce7',15,.24);
+    path(branchPath,'#258bf4',7,.21);
+    path(main,'#65cbff',6,.63);
+    path(branchPath,'#93dfff',2.2,.82);
+    path(main,'#f0fcff',2.5,1);
+    lightningOverlay.replaceChildren(svg);
+    return true;
+  }
+  function playLightningWipe(outgoing){
+    if(!prepareBolt())return;
+    lightningOverlay.hidden=false;
+    const duration=620;
+    const version=++wipeVersion;
+    const options={duration,easing:'linear',fill:'both'};
+    wipeAnimations=[
+      outgoing.animate([
+        {clipPath:'inset(0 0 0% 0)'},
+        {clipPath:'inset(100% 0 0 0)'}
+      ],options),
+      lightningOverlay.animate([
+        {clipPath:'inset(0 0 100% 0)',opacity:.98,offset:0},
+        {clipPath:'inset(0 0 10% 0)',opacity:1,offset:.9},
+        {clipPath:'inset(0 0 0% 0)',opacity:0,offset:1}
+      ],options)
+    ];
+    Promise.all(wipeAnimations.map(a=>a.finished.catch(()=>{}))).then(()=>{
+      if(wipeVersion===version)clearWipe();
+    });
   }
   function notifyGameVisibility(){
     for(const key of GAMES){
@@ -220,25 +288,33 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     return frame;
   }
   function show(previous=null){
+    // Interrupting a transition is safe even with rapid repeated tab taps.
+    clearWipe();
     const active=activeKey();
     for(const tab of tabs){
       tab.setAttribute('aria-selected',tab.dataset.app===current?'true':'false');
     }
     if(active)createFrame(active);
     const incoming=active?frames.get(active):hub;
+    const animate=!!previous&&previous!==incoming&&(!active||ready.has(active))&&
+      !reducedMotion.matches&&document.visibilityState==='visible'&&
+      typeof previous.animate==='function'&&typeof lightningOverlay.animate==='function';
     for(const [id,frame] of frames){
       const visible=id===active;
+      const leaving=animate&&frame===previous;
       frame.classList.toggle('active',visible);
+      frame.classList.toggle('is-leaving',leaving);
       if(visible)frame.removeAttribute('inert');
       else frame.setAttribute('inert','');
       frame.setAttribute('aria-hidden',visible?'false':'true');
     }
-    hub.hidden=!!active;
+    hub.hidden=!!active&&!(animate&&previous===hub);
+    hub.classList.toggle('is-leaving',animate&&previous===hub);
     hub.setAttribute('aria-hidden',active?'true':'false');
     loading.hidden=!active||ready.has(active);
     if(!loading.hidden)loading.textContent='Άνοιγμα '+apps[active].name+'…';
     notifyGameVisibility();
-    if(previous&&previous!==incoming)playGlow();
+    if(animate)playLightningWipe(previous);
   }
   function select(key){
     if(key!=='games'&&(!apps[key]||GAMES.has(key)))return;
