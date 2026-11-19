@@ -62,7 +62,17 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .app-frame.active{display:block;z-index:1}
 .app-frame.is-leaving{display:block;z-index:3;pointer-events:none}
 /* Black exists only while an actual transition is running: no persistent overlay. */
-.stage.is-black-transition::after{content:"";position:absolute;inset:0;z-index:2;background:#000;pointer-events:none}
+.stage.is-black-transition::after{
+  content:"";position:absolute;inset:0;z-index:2;background:#000;pointer-events:none;
+  animation:reveal-behind-astronaut 1100ms linear both
+}
+/* With the astronaut's ease curve, 43% elapsed time is ~67% of the descent.
+   Hold black until that moment, then slide it down to reveal the new app
+   from the top. Only transform animates: no fade or additional repaint loop. */
+@keyframes reveal-behind-astronaut{
+  0%,43%{transform:translate3d(0,0,0)}
+  100%{transform:translate3d(0,100%,0)}
+}
 .sheet-pull{position:absolute;top:0;left:0;right:0;height:0;z-index:4;pointer-events:none}
 .sheet-pull[hidden]{display:none!important}
 .sheet-fold{position:absolute;top:-4px;left:0;right:0;height:8px;
