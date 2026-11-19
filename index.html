@@ -63,13 +63,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .app-frame.is-leaving{display:block;z-index:2;pointer-events:none}
 .sheet-pull{position:absolute;top:0;left:0;right:0;height:0;z-index:3;pointer-events:none}
 .sheet-pull[hidden]{display:none!important}
-.sheet-fold{position:absolute;top:-7px;left:0;right:0;height:19px;
-  background:linear-gradient(180deg,#e9f8ff 0%,#79caf7 24%,#28689e 57%,#0b2d4e 100%);
-  clip-path:polygon(0 9%,10% 17%,20% 5%,31% 18%,42% 7%,53% 20%,65% 5%,77% 17%,89% 7%,100% 18%,100% 100%,0 100%)}
-.sheet-fold:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#08172acc}
-.sheet-rope{position:absolute;left:calc(50% + 30px);bottom:0;width:2px;height:100vh;height:100dvh;
-  background:linear-gradient(180deg,#5a91bc,#caedff 60%,#f3fbff);opacity:.85}
-.sheet-rope:after{content:"";position:absolute;left:-1px;right:-1px;bottom:0;height:80px;background:#d6f5ff;opacity:.75}
+.sheet-fold{position:absolute;top:-4px;left:0;right:0;height:8px;
+  background:linear-gradient(180deg,#a1d6f4 0%,#4b95c7 42%,#173e64 100%);
+  box-shadow:0 0 5px rgba(75,163,230,.22)}
+.sheet-fold:after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(5,27,51,.75)}
+.sheet-rope{position:absolute;left:calc(50% + 30px);bottom:0;width:1px;height:190px;
+  background:linear-gradient(180deg,rgba(92,163,207,.15),rgba(138,197,231,.55));opacity:.65}
 .sheet-mascot{position:absolute;left:50%;bottom:0;width:128px;height:132px;transform:translateX(-50%)}
 .sheet-mascot svg{display:block;width:100%;height:100%}
 @media(prefers-reduced-motion:reduce){.sheet-pull{display:none!important}}
@@ -234,7 +233,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     if(height<100)return;
     sheetPull.hidden=false;
     const version=++wipeVersion;
-    const options={duration:1500,easing:'cubic-bezier(.42,.04,.46,1)',fill:'both'};
+    const options={duration:1100,easing:'cubic-bezier(.4,0,.2,1)',fill:'both'};
     wipeAnimations=[
       outgoing.animate([
         {clipPath:'inset(0% 0 0 0)'},
