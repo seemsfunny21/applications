@@ -60,8 +60,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#061424;isolation:isolate}
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block;z-index:1}
-.app-frame.is-leaving{display:block;z-index:2;pointer-events:none}
-.sheet-pull{position:absolute;top:0;left:0;right:0;height:0;z-index:3;pointer-events:none}
+.app-frame.is-leaving{display:block;z-index:3;pointer-events:none}
+/* Black exists only while an actual transition is running: no persistent overlay. */
+.stage.is-black-transition::after{content:"";position:absolute;inset:0;z-index:2;background:#000;pointer-events:none}
+.sheet-pull{position:absolute;top:0;left:0;right:0;height:0;z-index:4;pointer-events:none}
 .sheet-pull[hidden]{display:none!important}
 .sheet-fold{position:absolute;top:-4px;left:0;right:0;height:8px;
   background:linear-gradient(180deg,#a1d6f4 0%,#4b95c7 42%,#173e64 100%);
@@ -75,7 +77,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .loading{
   position:absolute;inset:0;display:grid;place-items:center;
   background:#071426;color:#c8d9ec;text-align:center;
-  padding:18px;z-index:4;font-size:13px;font-weight:650;pointer-events:none
+  padding:18px;z-index:5;font-size:13px;font-weight:650;pointer-events:none
 }
 .loading[hidden]{display:none}
 .loading span{display:block;width:30px;height:30px;border:3px solid #355c83;border-top-color:#a3d8ff;border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
@@ -88,7 +90,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   padding:22px 12px 28px;color:#f1f8ff;text-align:center
 }
 .games-hub[hidden]{display:none!important}
-.games-hub.is-leaving{z-index:2;pointer-events:none}
+.games-hub.is-leaving{z-index:3;pointer-events:none}
 .games-shell{width:min(100%,680px);margin:auto}
 .games-kicker{font-size:10px;letter-spacing:.18em;color:#8fcaff;font-weight:900}
 .games-heading h1{font-size:clamp(23px,5vw,32px);margin:7px 0 5px}
@@ -216,13 +218,15 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const frames=new Map(),ready=new Set();
   let current='voltes',activeGame=null,warmupStarted=false;
-  let wipeAnimations=[],wipeVersion=0;
+  let wipeAnimations=[],wipeVersion=0,wipeTimeout=null;
   function activeKey(){return current==='games'?activeGame:current}
   function activeScreen(){return current==='games'&&!activeGame?hub:frames.get(activeKey())||null}
   function clearWipe(){
     ++wipeVersion;
+    if(wipeTimeout!==null){clearTimeout(wipeTimeout);wipeTimeout=null;}
     for(const animation of wipeAnimations)animation.cancel();
     wipeAnimations=[];
+    stage.classList.remove('is-black-transition');
     for(const frame of frames.values())frame.classList.remove('is-leaving');
     hub.classList.remove('is-leaving');
     hub.hidden=!(current==='games'&&!activeGame);
@@ -231,20 +235,32 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   function playSheetPull(outgoing){
     const height=stage.clientHeight;
     if(height<100)return;
+    // Only active during a real, ready-to-display tab switch; never at startup.
     sheetPull.hidden=false;
+    stage.classList.add('is-black-transition');
     const version=++wipeVersion;
     const options={duration:1100,easing:'cubic-bezier(.4,0,.2,1)',fill:'both'};
-    wipeAnimations=[
-      outgoing.animate([
-        {clipPath:'inset(0% 0 0 0)'},
-        {clipPath:'inset(100% 0 0 0)'}
-      ],options),
-      sheetPull.animate([
-        {transform:'translate3d(0,0,0)'},
-        {transform:'translate3d(0,'+height+'px,0)'}
-      ],options)
-    ];
+    try {
+      wipeAnimations=[
+        outgoing.animate([
+          {clipPath:'inset(0% 0 0 0)'},
+          {clipPath:'inset(100% 0 0 0)'}
+        ],options),
+        sheetPull.animate([
+          {transform:'translate3d(0,0,0)'},
+          {transform:'translate3d(0,'+height+'px,0)'}
+        ],options)
+      ];
+    } catch (_) {
+      if(wipeVersion===version)clearWipe();
+      return;
+    }
+    // Fail-safe cleanup if the browser suspends animation completion events.
+    wipeTimeout=setTimeout(()=>{
+      if(wipeVersion===version)clearWipe();
+    },1450);
     Promise.all(wipeAnimations.map(a=>a.finished.catch(()=>{}))).then(()=>{
+      // The black disappears instantly as the astronaut exits: no fade, no wait.
       if(wipeVersion===version)clearWipe();
     });
   }
