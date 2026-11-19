@@ -297,6 +297,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     if(active)createFrame(active);
     const incoming=active?frames.get(active):hub;
     const animate=!!previous&&previous!==incoming&&(!active||ready.has(active))&&
+      stage.clientWidth>=100&&stage.clientHeight>=100&&
       !reducedMotion.matches&&document.visibilityState==='visible'&&
       typeof previous.animate==='function'&&typeof lightningOverlay.animate==='function';
     for(const [id,frame] of frames){
