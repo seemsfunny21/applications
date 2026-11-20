@@ -185,7 +185,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     reversifunny:{name:'ReversiFunny',url:'https://seemsfunny21.github.io/reversifunny/'},
     minesweeperfunny:{name:'MinesweeperFunny',url:'./minesweeperfunny/'},
     solitairefunny:{name:'SolitaireFunny',url:'./solitairefunny/'},
-    tavlifunny:{name:'TavliFunny',url:'./tavlifunny/'},
+    tavlifunny:{name:'TavliFunny',url:'./tavlifunny/?v=20261120-classic'},
     tichufunny:{name:'TichuFunny',url:'./tichufunny/'}
   });
   const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','tavlifunny','tichufunny']);
@@ -260,10 +260,15 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     frame.id='frame-'+key;
     frame.className='app-frame';
     frame.title=app.name;
-    frame.setAttribute('allow','geolocation; camera; microphone; clipboard-read; clipboard-write; fullscreen');
+    // The Tavli iframe cannot request fullscreen; other embedded apps retain
+    // their original permission set.
+    frame.setAttribute('allow',key==='tavlifunny'
+      ? 'geolocation; camera; microphone; clipboard-read; clipboard-write'
+      : 'geolocation; camera; microphone; clipboard-read; clipboard-write; fullscreen');
     frame.setAttribute('loading','eager');
     frame.referrerPolicy='strict-origin-when-cross-origin';
     frame.addEventListener('load',()=>{
+      if(key==='tavlifunny')enforceVisibleTabs();
       ready.add(key);
       if(activeKey()===key)loading.hidden=true;
       if(GAMES.has(key))notifyGameVisibility();
@@ -273,7 +278,18 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     stage.insertBefore(frame,loading);
     return frame;
   }
+  function enforceVisibleTabs(){
+    // Fullscreen on the game stage hides the Applications tabs. Exit any
+    // lingering fullscreen state whenever Tavli is active (including old tabs).
+    const full=document.fullscreenElement;
+    if(!full)return;
+    if(full===stage || activeKey()==='tavlifunny'){
+      if(document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+    }
+  }
+  document.addEventListener('fullscreenchange',enforceVisibleTabs);
   function show(previous=null){
+    enforceVisibleTabs();
     // Interrupting a transition is safe even with rapid repeated tab taps.
     clearWipe();
     const active=activeKey();
@@ -350,7 +366,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   window.addEventListener('load',()=>{
     if('requestIdleCallback' in window)requestIdleCallback(warm,{timeout:1800});
     else setTimeout(warm,500);
-    if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});
+    if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'})
+      .then(reg=>reg.update().catch(()=>{})).catch(()=>{});
   },{once:true});
 })();
 </script>
