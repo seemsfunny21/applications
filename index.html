@@ -156,6 +156,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
             <span class="game-mark" aria-hidden="true">♠ ♥<br>♣ ♦</span>
             <strong>SolitaireFunny</strong><span>Πασιέντζα Klondike</span><small>Αναίρεση · Υποδείξεις</small>
           </button>
+          <button class="game-choice" type="button" data-game="chessfunny" aria-label="Άνοιγμα ChessFunny Σκάκι">
+            <span class="game-mark" aria-hidden="true">♘</span>
+            <strong>ChessFunny</strong><span>Σκάκι με AI</span><small>3 δυσκολίες · Υποδείξεις · Αναίρεση</small>
+          </button>
           <button class="game-choice" type="button" data-game="tavlifunny" aria-label="Άνοιγμα TavliFunny">
             <span class="game-mark" aria-hidden="true">🎲</span>
             <strong>TavliFunny</strong><span>Πόρτες</span><small>Εναντίον υπολογιστή</small>
@@ -189,11 +193,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     reversifunny:{name:'ReversiFunny',url:'https://seemsfunny21.github.io/reversifunny/'},
     minesweeperfunny:{name:'MinesweeperFunny',url:'./minesweeperfunny/?v=20261120-mobile-layout'},
     solitairefunny:{name:'SolitaireFunny',url:'./solitairefunny/?v=20261120-mobile-layout'},
+    chessfunny:{name:'ChessFunny',url:'./chessfunny/?v=20261120-initial'},
     tavlifunny:{name:'TavliFunny',url:'./tavlifunny/?v=20261120-fixed-checkers'},
     tichufunny:{name:'TichuFunny',url:'./tichufunny/?v=20261120-tutorial'},
     tichufunnyonline:{name:'TichuFunny Online',url:'./tichufunnyonline/?v=20261120-faster-sync'}
   });
-  const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','tavlifunny','tichufunny','tichufunnyonline']);
+  const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','chessfunny','tavlifunny','tichufunny','tichufunnyonline']);
   const stage=document.getElementById('stage');
   const hub=document.getElementById('gamesHub');
   const tabs=Array.from(document.querySelectorAll('.tab'));
