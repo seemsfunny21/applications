@@ -164,9 +164,9 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
             <span class="game-mark" aria-hidden="true">🃏</span>
             <strong>TichuFunny</strong><span>Τίτσου με AI</span><small>2 ομάδες · 3 αντίπαλοι AI</small>
           </button>
-          <button class="game-choice" type="button" data-game="tichufunnyonline" aria-label="Προεπισκόπηση εμφάνισης TichuFunny Online">
+          <button class="game-choice" type="button" data-game="tichufunnyonline" aria-label="Άνοιγμα TichuFunny Online με φίλους ή υπολογιστές">
             <span class="game-mark" aria-hidden="true">🃏</span>
-            <strong>TichuFunny Online</strong><span>Προεπισκόπηση τραπεζιού</span><small>Η σύνδεση παικτών δεν έχει ενεργοποιηθεί ακόμη</small>
+            <strong>TichuFunny Online</strong><span>Με φίλους ή AI</span><small>4 καρέκλες · δωμάτια με κωδικό</small>
           </button>
         </div>
         <p class="games-tip">Για να αλλάξεις παιχνίδι, πάτησε ξανά την καρτέλα «Παιχνίδια».</p>
@@ -190,8 +190,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     minesweeperfunny:{name:'MinesweeperFunny',url:'./minesweeperfunny/'},
     solitairefunny:{name:'SolitaireFunny',url:'./solitairefunny/'},
     tavlifunny:{name:'TavliFunny',url:'./tavlifunny/?v=20261120-larger-board'},
-    tichufunny:{name:'TichuFunny',url:'./tichufunny/?v=20261120-inline-scores'},
-    tichufunnyonline:{name:'TichuFunny Online · Προεπισκόπηση',url:'./tichufunnyonline/?v=20261120-preview'}
+    tichufunny:{name:'TichuFunny',url:'./tichufunny/?v=20261120-actions-in-table'},
+    tichufunnyonline:{name:'TichuFunny Online',url:'./tichufunnyonline/?v=20261120-mixed-rooms'}
   });
   const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','tavlifunny','tichufunny','tichufunnyonline']);
   const stage=document.getElementById('stage');
@@ -278,7 +278,16 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
       if(activeKey()===key)loading.hidden=true;
       if(GAMES.has(key))notifyGameVisibility();
     });
-    frame.src=app.url;
+    let frameUrl=app.url;
+    if(key==='tichufunnyonline'){
+      const roomCode=new URLSearchParams(location.search).get('room')?.toUpperCase()||'';
+      if(/^[A-HJ-NP-Z2-9]{6}$/.test(roomCode)){
+        const roomUrl=new URL(app.url,location.href);
+        roomUrl.searchParams.set('room',roomCode);
+        frameUrl=roomUrl.href;
+      }
+    }
+    frame.src=frameUrl;
     frames.set(key,frame);
     stage.insertBefore(frame,loading);
     return frame;
