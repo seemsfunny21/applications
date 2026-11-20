@@ -164,6 +164,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
             <span class="game-mark" aria-hidden="true">🃏</span>
             <strong>TichuFunny</strong><span>Τίτσου με AI</span><small>2 ομάδες · 3 αντίπαλοι AI</small>
           </button>
+          <button class="game-choice" type="button" data-game="tichufunnyonline" aria-label="Προεπισκόπηση εμφάνισης TichuFunny Online">
+            <span class="game-mark" aria-hidden="true">🃏</span>
+            <strong>TichuFunny Online</strong><span>Προεπισκόπηση τραπεζιού</span><small>Η σύνδεση παικτών δεν έχει ενεργοποιηθεί ακόμη</small>
+          </button>
         </div>
         <p class="games-tip">Για να αλλάξεις παιχνίδι, πάτησε ξανά την καρτέλα «Παιχνίδια».</p>
       </div>
@@ -186,9 +190,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     minesweeperfunny:{name:'MinesweeperFunny',url:'./minesweeperfunny/'},
     solitairefunny:{name:'SolitaireFunny',url:'./solitairefunny/'},
     tavlifunny:{name:'TavliFunny',url:'./tavlifunny/?v=20261120-larger-board'},
-    tichufunny:{name:'TichuFunny',url:'./tichufunny/?v=20261120-inline-scores'}
+    tichufunny:{name:'TichuFunny',url:'./tichufunny/?v=20261120-inline-scores'},
+    tichufunnyonline:{name:'TichuFunny Online · Προεπισκόπηση',url:'./tichufunnyonline/?v=20261120-preview'}
   });
-  const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','tavlifunny','tichufunny']);
+  const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','tavlifunny','tichufunny','tichufunnyonline']);
   const stage=document.getElementById('stage');
   const hub=document.getElementById('gamesHub');
   const tabs=Array.from(document.querySelectorAll('.tab'));
