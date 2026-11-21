@@ -49,6 +49,12 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
 .game-choice .game-text small{display:block;font-size:10px;color:#b5d6f0;margin-top:3px}
 .games-notice{text-align:center;font-size:10px;line-height:1.4;color:#a9cee8;margin:9px 0 2px}
 .game-iframe[hidden],.games-picker[hidden]{display:none!important}
+/* Games need a real desktop-sized viewport, not one sixth of the display. */
+.pane.is-maximized#pane-games .pane-frame{min-height:0;overflow:hidden}
+.pane.is-maximized#pane-games .game-iframe{width:100%;height:100%;display:block}
+.pane.is-maximized#pane-games .games-list{grid-template-columns:repeat(auto-fit,minmax(165px,1fr));max-width:1060px;margin:auto}
+.pane.is-maximized#pane-games .games-art{max-width:1060px;height:clamp(90px,18dvh,175px);margin:0 auto 12px}
+.pane.is-maximized#pane-games .games-notice{font-size:12px}
 .desktop-hint{display:none}
 @media(min-width:1900px){.game-choice{min-height:67px}.game-choice .game-text strong{font-size:13px}}
 @media(max-width:1100px){.pane-label strong{font-size:12px}.tool{width:28px;height:28px}.pane-bar{padding-left:8px}}
@@ -134,16 +140,16 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
   "use strict";
   const $=id=>document.getElementById(id);
   const gameInfo=Object.freeze({
-    sudokufunny:{name:"SudokuFunny",url:"https://seemsfunny21.github.io/sudokufunny/"},
-    reversifunny:{name:"ReversiFunny",url:"https://seemsfunny21.github.io/reversifunny/"},
-    minesweeperfunny:{name:"MinesweeperFunny",url:"https://seemsfunny21.github.io/minesweeperfunny/"},
-    solitairefunny:{name:"SolitaireFunny",url:"https://seemsfunny21.github.io/solitairefunny/"},
-    chessfunny:{name:"ChessFunny",url:"https://seemsfunny21.github.io/chessfunny/"},
-    tavlifunny:{name:"TavliFunny",url:"https://seemsfunny21.github.io/tavlifunny/"},
-    tichufunny:{name:"TichuFunny",url:"https://seemsfunny21.github.io/tichufunny/"},
-    tichufunnyonline:{name:"TichuFunny Online",url:"https://seemsfunny21.github.io/tichufunnyonline/"},
-    monopolyfunny:{name:"MonopolyFunny",url:"https://seemsfunny21.github.io/monopolyfunny/"},
-    quizfunny:{name:"QuizFunny",url:"https://seemsfunny21.github.io/quizfunny/"}
+    sudokufunny:{name:"SudokuFunny",url:"https://seemsfunny21.github.io/sudokufunny/?v=20261120-native-dialog"},
+    reversifunny:{name:"ReversiFunny",url:"https://seemsfunny21.github.io/reversifunny/?v=20261120-native-dialog"},
+    minesweeperfunny:{name:"MinesweeperFunny",url:"../minesweeperfunny/?v=20261121-apps-layout"},
+    solitairefunny:{name:"SolitaireFunny",url:"../solitairefunny/?v=20261121-apps-layout"},
+    chessfunny:{name:"ChessFunny",url:"../chessfunny/?v=20261121-apps-layout"},
+    tavlifunny:{name:"TavliFunny",url:"../tavlifunny/?v=20261121-apps-layout"},
+    tichufunny:{name:"TichuFunny",url:"../tichufunny/?v=20261121-apps-layout"},
+    tichufunnyonline:{name:"TichuFunny Online",url:"../tichufunnyonline/?v=20261121-apps-layout"},
+    monopolyfunny:{name:"MonopolyFunny",url:"https://seemsfunny21.github.io/monopolyfunny/?v=20261121settingsv20"},
+    quizfunny:{name:"QuizFunny",url:"https://seemsfunny21.github.io/quizfunny/?v=20261121e"}
   });
   const headerFrames=[...document.querySelectorAll(".pane:not(#pane-games) iframe")];
   for(const frame of headerFrames){
@@ -175,32 +181,65 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
   document.addEventListener("keydown",event=>{
     if(event.key==="Escape" && document.querySelector(".pane.is-maximized"))normalizeZoom();
   });
-  let gameFrame=null;
+  const gamesPane=$("pane-games");
+  const gamesZoom=gamesPane.querySelector("[data-zoom]");
+  let gameFrame=null,activeGameKey=null;
+  function notifyGame(active){
+    if(!gameFrame||!activeGameKey||!gameFrame.contentWindow)return;
+    // Matches the visibility messages used by the regular Applications launcher.
+    gameFrame.contentWindow.postMessage({
+      type:activeGameKey+":visibility",active:!!active
+    },location.origin);
+  }
   function closeGame(){
-    if(gameFrame){gameFrame.remove();gameFrame=null;}
+    notifyGame(false);
+    if(gameFrame){gameFrame.src="about:blank";gameFrame.remove();gameFrame=null;}
+    activeGameKey=null;
     $("gamesPicker").hidden=false;
     $("gamesBack").hidden=true;
     $("gamesLoading").hidden=true;
     $("gamesTitle").textContent="Παιχνίδια";
     $("gamesOpen").href="https://seemsfunny21.github.io/applications/?app=games";
+    // Leaving a game returns to the original six-app dashboard.
+    if(gamesPane.classList.contains("is-maximized"))normalizeZoom();
   }
   function launchGame(key){
     const game=gameInfo[key];
     if(!game)return;
-    closeGame();
+    if(gameFrame){notifyGame(false);gameFrame.src="about:blank";gameFrame.remove();gameFrame=null;}
+    activeGameKey=key;
     $("gamesPicker").hidden=true;
     $("gamesBack").hidden=false;
     $("gamesTitle").textContent=game.name;
-    $("gamesOpen").href=game.url;
     $("gamesLoading").hidden=false;
+    // A full-screen-sized frame prevents cut-off boards, cards and controls.
+    normalizeZoom();
+    gamesPane.classList.add("is-maximized");
+    gamesZoom.setAttribute("aria-pressed","true");
+    gamesZoom.textContent="⊠";
+    gamesZoom.title="Επιστροφή στη διάταξη 3×2";
+    const url=new URL(game.url,location.href);
+    if(key==="tichufunnyonline"){
+      const roomCode=new URLSearchParams(location.search).get("room")?.toUpperCase()||"";
+      if(/^[A-HJ-NP-Z2-9]{6}$/.test(roomCode))url.searchParams.set("room",roomCode);
+    }
+    $("gamesOpen").href=url.href;
     const frame=document.createElement("iframe");
     frame.className="game-iframe";
     frame.title=game.name;
     frame.loading="eager";
     frame.allow="geolocation; camera; microphone; clipboard-read; clipboard-write; fullscreen";
+    frame.allowFullscreen=true;
     frame.referrerPolicy="strict-origin-when-cross-origin";
-    frame.addEventListener("load",()=>{$("gamesLoading").hidden=true;},{once:true});
-    frame.src=game.url;
+    frame.addEventListener("load",()=>{
+      if(frame!==gameFrame)return;
+      $("gamesLoading").hidden=true;
+      notifyGame(document.visibilityState==="visible");
+    },{once:true});
+    frame.addEventListener("error",()=>{
+      if(frame===gameFrame)$("gamesLoading").textContent="Δεν ήταν δυνατή η φόρτωση. Άνοιξε το παιχνίδι σε νέα καρτέλα.";
+    },{once:true});
+    frame.src=url.href;
     $("gamesFrame").append(frame);
     gameFrame=frame;
   }
@@ -209,6 +248,8 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
     if(button)launchGame(button.dataset.game);
   });
   $("gamesBack").addEventListener("click",closeGame);
+  document.addEventListener("visibilitychange",()=>notifyGame(document.visibilityState==="visible"));
+  window.addEventListener("pagehide",()=>notifyGame(false));
 })();
 </script>
 </body>
