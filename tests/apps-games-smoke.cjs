@@ -10,6 +10,14 @@ const {chromium}=require('playwright');
   const browser=await chromium.launch({headless:true,executablePath,args:['--no-sandbox']});
   const viewport={width:1920,height:1080}; // User's actual desktop resolution.
   const context=await browser.newContext({viewport,locale:'el-GR',serviceWorkers:'block'});
+  // Monopoly must reliably land on an unowned property: dice 2+3 = 5.
+  // This makes purchase, auction, and resume-after-reload testable in Chromium.
+  await context.addInitScript(()=>{
+    if(location.pathname.includes('/monopolyfunny/')){
+      let diceCalls=0;
+      Math.random=()=>++diceCalls%2?0.2:0.4;
+    }
+  });
   const page=await context.newPage();
   const keys=['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','chessfunny',
     'tavlifunny','tichufunny','tichufunnyonline','monopolyfunny','quizfunny'];
@@ -22,7 +30,7 @@ const {chromium}=require('playwright');
       let published=false;
       for(let tries=0;tries<12;tries++){
         await page.goto(base+'?audit='+tries,{waitUntil:'domcontentloaded',timeout:30000});
-        published=await page.locator('script').evaluateAll(xs=>xs.some(x=>x.textContent.includes('20261121-gear-clean-v3')&&x.textContent.includes('20261121-gear-help-v2')));
+        published=await page.locator('script').evaluateAll(xs=>xs.some(x=>x.textContent.includes('20261121-gear-clean-v3')&&x.textContent.includes('20261121-gear-help-v2')&&x.textContent.includes('20261121-purchase-modal-v22')));
         if(published)break;
         await page.waitForTimeout(5000);
       }
@@ -167,35 +175,68 @@ const {chromium}=require('playwright');
         console.log('PASS TV QUIZ ANSWERS '+JSON.stringify(readable));
       }
       if(key==='monopolyfunny'){
-        // Assert a game can START, not just render its 40 square board.
         const capture=()=>frame.evaluate(()=>{
           const game=JSON.parse(localStorage.getItem('monopolyfunny-v1')||'null');
-          return {round:game?.round,phase:game?.phase,players:game?.players?.length,
+          return {
+            round:game?.round,phase:game?.phase,players:game?.players?.length,
+            current:game?.current,pos:game?.players?.[0]?.pos,
+            stationOwner:game?.properties?.[5]?.owner,
             log:game?.log||[],modal:document.getElementById('modal')?.open,
-            settings:!!document.getElementById('settings'),
-            buttons:[...document.querySelectorAll('#dialogActions button')].map(x=>x.textContent)};
+            purchaseOpen:document.getElementById('purchasePanel')?.open
+          };
         });
         const before=await capture();
         await frame.waitForFunction(()=>{
-          const data=JSON.parse(localStorage.getItem('monopolyfunny-v1')||'null');
-          return data?.log?.some(x=>x.includes('έφερε'));
-        },{timeout:7500});
-        const auto=await capture();
-        assert.ok(auto.log.some(x=>x.includes('έφερε')),
-          'Monopoly auto-turn actually starts '+JSON.stringify({before,auto}));
-        // The prominently visible start action must work, without Settings.
-        assert.equal(await frame.locator('#newGame').count(),1,
-          'Monopoly has an explicit start/restart button');
+          const game=JSON.parse(localStorage.getItem('monopolyfunny-v1')||'null');
+          return game?.log?.some(x=>x.includes('έφερε'));
+        },null,{timeout:9000});
+        await frame.locator('#purchasePanel[open]').waitFor({timeout:8000});
+        const prompt=await frame.evaluate(()=>{
+          const d=document.getElementById('purchasePanel'),r=d.getBoundingClientRect();
+          const b=document.getElementById('inlineBuy').getBoundingClientRect();
+          const a=document.getElementById('inlineAuction').getBoundingClientRect();
+          return {open:d.open,viewport:[innerWidth,innerHeight],
+           dialog:[r.x,r.y,r.width,r.height],buy:[b.x,b.y,b.width,b.height],
+           auction:[a.x,a.y,a.width,a.height],text:d.innerText};
+        });
+        assert.ok(prompt.open&&prompt.dialog[1]>=0
+          &&prompt.dialog[1]+prompt.dialog[3]<=prompt.viewport[1]+2,
+          'Monopoly purchase modal entirely on-screen '+JSON.stringify(prompt));
+        for(const rect of [prompt.buy,prompt.auction]){
+          assert.ok(rect[1]>=0&&rect[1]+rect[3]<prompt.viewport[1],
+            'Purchase choice is not clipped by board '+JSON.stringify(prompt));
+        }
+        assert.ok(prompt.text.includes('Σταθμός Βορρά'),
+          'First fixed roll reaches an available property '+JSON.stringify(prompt));
+        await frame.locator('#inlineBuy').click();
+        const purchased=await capture();
+        assert.equal(purchased.stationOwner,0,
+          'Clicking Buy really purchases the station '+JSON.stringify(purchased));
+        assert.equal(purchased.purchaseOpen,false,'Purchase modal closes after buying');
+        // New game still works after closing a purchase prompt.
         await frame.locator('#newGame').click();
         await frame.locator('#dialogActions button', {hasText:'1 AI'}).click();
         await frame.locator('#dialogActions button', {hasText:'Νέα παρτίδα'}).click();
         const fresh=await capture();
-        assert.equal(fresh.players,2,'Monopoly starts chosen new 1-AI game '+JSON.stringify(fresh));
+        assert.equal(fresh.players,2,'Monopoly starts chosen 1-AI game');
         assert.equal(fresh.round,1,'Monopoly resets to round one');
-        // The first automatic turn was already verified above. Testing the
-        // reset itself requires a new game state, not a second random dice
-        // sequence (which can wait on a human purchase decision).
-        // Broken/stale saved games should recover instead of leaving a dead board.
+        // Reload with an interrupted purchase. The decision MUST reappear,
+        // and an auction must advance the phase (rather than trapping player).
+        await frame.evaluate(()=>{
+          const saved=JSON.parse(localStorage.getItem('monopolyfunny-v1'));
+          saved.phase='buy';saved.current=0;saved.players[0].pos=9;
+          saved.properties[9].owner=-1;
+          localStorage.setItem('monopolyfunny-v1',JSON.stringify(saved));
+        });
+        await frame.goto(frame.url(),{waitUntil:'load'});
+        await frame.locator('#purchasePanel[open]').waitFor({timeout:8000});
+        assert.ok((await frame.locator('#purchaseTitle').innerText()).includes('Οδός Κήπων'),
+          'Saved pending property choice restored as a modal');
+        await frame.locator('#inlineAuction').click();
+        const auctioned=await capture();
+        assert.equal(auctioned.purchaseOpen,false,'Auction closes the purchase modal');
+        assert.notEqual(auctioned.phase,'buy','Auction successfully completes the buying phase');
+        // Invalid saved states must not lock up the next session.
         await frame.evaluate(()=>{
           const saved=JSON.parse(localStorage.getItem('monopolyfunny-v1'));
           saved.phase='unsupported-old-phase';
@@ -203,11 +244,11 @@ const {chromium}=require('playwright');
         });
         await frame.goto(frame.url(),{waitUntil:'load'});
         const recovered=await capture();
-        assert.equal(recovered.phase,'roll','Monopoly repairs invalid saved game on launch');
-        assert.equal(recovered.players,3,'Recovery restores default game instead of a dead screen');
+        assert.equal(recovered.phase,'roll','Invalid saved game safely resets');
+        assert.equal(recovered.players,3,'Invalid game restores default party');
         assert.equal(await frame.locator('#newGame').count(),1,
-          'Start action remains visible after save recovery');
-        console.log('PASS MONOPOLY GAMEPLAY '+JSON.stringify({before,auto,fresh,recovered}));
+          'Start action stays available after recovery');
+        console.log('PASS MONOPOLY ACTIONS '+JSON.stringify({before,prompt,purchased,fresh,auctioned,recovered}));
       }
       findings.push({game:key,frame:[Math.round(rect.width),Math.round(rect.height)],...data});
       await page.locator('#gamesBack').click();
