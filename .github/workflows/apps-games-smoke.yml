@@ -1,0 +1,28 @@
+name: Audit all /apps game layouts
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/index.html'
+      - 'tests/apps-games-smoke.cjs'
+      - '.github/workflows/apps-games-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  games:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright for the system Chromium browser
+        run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Start local site and open all ten games in desktop Chromium
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/apps-test-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          node tests/apps-games-smoke.cjs
