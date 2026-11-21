@@ -144,9 +144,9 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
   const gameInfo=Object.freeze({
     sudokufunny:{name:"SudokuFunny",url:"https://seemsfunny21.github.io/sudokufunny/?v=20261120-native-dialog"},
     reversifunny:{name:"ReversiFunny",url:"https://seemsfunny21.github.io/reversifunny/?v=20261121-tvsettings-v2"},
-    minesweeperfunny:{name:"MinesweeperFunny",url:"../minesweeperfunny/?v=20261121-apps-layout"},
+    minesweeperfunny:{name:"MinesweeperFunny",url:"../minesweeperfunny/?v=20261121-gear-help-v2"},
     solitairefunny:{name:"SolitaireFunny",url:"../solitairefunny/?v=20261121-tvsettings-v2"},
-    chessfunny:{name:"ChessFunny",url:"../chessfunny/?v=20261121-tvsettings-v2"},
+    chessfunny:{name:"ChessFunny",url:"../chessfunny/?v=20261121-gear-clean-v3"},
     tavlifunny:{name:"TavliFunny",url:"../tavlifunny/?v=20261121-tvsettings-v2"},
     tichufunny:{name:"TichuFunny",url:"../tichufunny/?v=20261121-tvsettings-v2"},
     tichufunnyonline:{name:"TichuFunny Online",url:"../tichufunnyonline/?v=20261121-tvsettings-v2"},
@@ -199,10 +199,10 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
         css+="@media(min-width:900px){.app-shell>.hero{display:none!important}}";
       }
       if(key==="chessfunny"){
-        css+="@media(min-width:900px){.shell{width:min(100%,calc(100dvh + 195px),1320px)!important;max-width:none!important;padding:4px 10px 2px!important}.layout{grid-template-columns:minmax(0,1fr) minmax(260px,320px)!important}.hero{padding:5px 9px!important;margin-bottom:4px!important}.foot{display:none!important}}";
+        css+="@media(min-width:900px){.shell{width:min(100%,calc(100dvh + 195px),1320px)!important;max-width:none!important;padding:4px 10px 2px!important}.layout{display:flex!important;justify-content:center!important;grid-template-columns:none!important;gap:0!important}.board-card{width:min(100%,calc(100dvh - 120px),980px)!important;max-width:980px!important}.hero{padding:5px 9px!important;margin-bottom:4px!important}.foot{display:none!important}}";
       }
       if(key==="minesweeperfunny"){
-        css+="@media(min-width:900px){.shell{padding:4px 8px 0!important}.hero{padding:5px 9px!important;margin-bottom:2px!important}.hero .symbol{font-size:20px!important}.hero h1{font-size:21px!important;margin:0!important}.hero .sub{display:none!important}.panel{margin-top:4px!important;padding:6px!important}.footer,.best{display:none!important}.help-details{margin-top:2px!important}}";
+        css+="@media(min-width:900px){.shell{padding:4px 8px 0!important}.hero{padding:5px 46px!important;margin-bottom:2px!important}.hero .symbol{font-size:20px!important}.hero h1{font-size:21px!important;margin:0!important}.hero .sub{display:none!important}.panel{margin-top:4px!important;padding:6px!important}.footer,.best{display:none!important}}";
       }
       if(key==="solitairefunny"){
         css+="@media(min-width:900px){.shell{padding:3px 8px 2px!important}.suite-game-banner,.hero{display:none!important}.hero{padding:5px 7px!important;margin-bottom:3px!important}.hero-icon{font-size:17px!important;line-height:1!important}.hero h1{font-size:19px!important;margin:1px!important}.hero .sub{display:none!important}.panel{padding:5px 5px 6px!important}.stats{margin-bottom:4px!important}.metric{padding:4px!important}.tools{margin:4px 1px!important}.game{min-height:min(500px,calc(100dvh - 250px))!important;padding:5px 3px 6px!important}.top{margin-bottom:7px!important}.foot{display:none!important}}";
