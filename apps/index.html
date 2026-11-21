@@ -50,6 +50,8 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
 .games-notice{text-align:center;font-size:10px;line-height:1.4;color:#a9cee8;margin:9px 0 2px}
 .game-iframe[hidden],.games-picker[hidden]{display:none!important}
 /* Games need a real desktop-sized viewport, not one sixth of the display. */
+.pane.is-maximized#pane-games{grid-template-rows:38px minmax(0,1fr)}
+.pane.is-maximized#pane-games .pane-bar{min-height:38px}
 .pane.is-maximized#pane-games .pane-frame{min-height:0;overflow:hidden}
 .pane.is-maximized#pane-games .game-iframe{width:100%;height:100%;display:block}
 .pane.is-maximized#pane-games .games-list{grid-template-columns:repeat(auto-fit,minmax(165px,1fr));max-width:1060px;margin:auto}
@@ -184,6 +186,25 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
   const gamesPane=$("pane-games");
   const gamesZoom=gamesPane.querySelector("[data-zoom]");
   let gameFrame=null,activeGameKey=null;
+  function fitGameToPane(frame,key){
+    // All published games share the github.io origin with /apps. Keep the
+    // standalone game styling unchanged; compact only its embedded PC view.
+    try{
+      const doc=frame.contentDocument;
+      if(!doc?.head)return;
+      const style=doc.createElement("style");
+      style.id="apps-desktop-game-fit";
+      let css="@media(min-width:900px){.suite-game-banner{height:clamp(38px,5dvh,54px)!important;margin:2px auto 5px!important}}";
+      if(key==="sudokufunny"||key==="reversifunny"){
+        css+="@media(min-width:900px){.app-shell>.hero{display:none!important}}";
+      }
+      if(key==="chessfunny"){
+        css+="@media(min-width:900px){.shell{width:min(100%,calc(100dvh + 195px),1320px)!important;max-width:none!important;padding:4px 10px 8px!important}.layout{grid-template-columns:minmax(0,1fr) minmax(260px,320px)!important}.hero{padding:5px 9px!important;margin-bottom:4px!important}.foot{display:none!important}}";
+      }
+      style.textContent=css;
+      doc.head.appendChild(style);
+    }catch(_){/* Cross-origin development previews keep native game styles. */}
+  }
   function notifyGame(active){
     if(!gameFrame||!activeGameKey||!gameFrame.contentWindow)return;
     // Matches the visibility messages used by the regular Applications launcher.
@@ -233,6 +254,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
     frame.referrerPolicy="strict-origin-when-cross-origin";
     frame.addEventListener("load",()=>{
       if(frame!==gameFrame)return;
+      fitGameToPane(frame,key);
       $("gamesLoading").hidden=true;
       notifyGame(document.visibilityState==="visible");
     },{once:true});
