@@ -265,6 +265,36 @@ const {chromium}=require('playwright');
       assert.ok(rect.width>=width-6&&rect.height>=1020,'Full-height chess at '+width);
       await page.locator('#gamesBack').click();
     }
+    // Mobile portrait: the Tichu view rotates to a landscape felt. Its
+    // decorative banner must not consume the phone's short edge any more.
+    const mobile=await browser.newContext({
+      viewport:{width:393,height:844},deviceScaleFactor:2,isMobile:true,
+      hasTouch:true,locale:'el-GR',serviceWorkers:'block'
+    });
+    try{
+      const phone=await mobile.newPage();
+      for(const key of ['tichufunny','tichufunnyonline']){
+        const src=new URL('../'+key+'/?mobile-test=1',base).href;
+        await phone.goto(src,{waitUntil:'domcontentloaded',timeout:30000});
+        const measured=await phone.evaluate(()=>{
+          const banner=document.querySelector('.suite-game-banner');
+          const game=document.querySelector('#cardTable');
+          const app=document.querySelector('.app');
+          const b=game?.getBoundingClientRect();
+          return {
+            bannerDisplay:banner?getComputedStyle(banner).display:'absent',
+            appTransform:app?getComputedStyle(app).transform:'missing',
+            tableHeight:b?.height||0,tableWidth:b?.width||0,
+            viewport:[innerWidth,innerHeight],
+            gameFound:!!game
+          };
+        });
+        assert.equal(measured.bannerDisplay,'none',key+' mobile banner hidden');
+        assert.ok(measured.gameFound&&measured.tableHeight>200&&measured.tableWidth>300,
+          key+' keeps a sizeable playable table '+JSON.stringify(measured));
+        console.log('PASS MOBILE '+key+' '+JSON.stringify(measured));
+      }
+    }finally{await mobile.close();}
     console.log('PASS '+(live?'PUBLISHED ':'LOCAL ')+'/apps at 1920x1080: ten game URLs, initial HTML, full-screen fit, and back navigation');
     console.log('LAYOUT_AUDIT '+JSON.stringify(findings));
   }finally{
