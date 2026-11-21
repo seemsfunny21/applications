@@ -60,17 +60,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#061424;isolation:isolate}
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block;z-index:1}
-.app-frame.is-leaving{display:block;z-index:3;pointer-events:none}
-/* One-way downward black curtain: cover the old screen, then reveal the new one instantly. */
-.stage.is-shutter-transition{background:#000}
-.stage.is-shutter-transition::after{
-  content:"";position:absolute;inset:0;z-index:4;background:#000;pointer-events:none;
-  animation:vertical-black-curtain 0ms linear both
-}
-@keyframes vertical-black-curtain{
-  from{transform:translate3d(0,-100%,0)}
-  to{transform:translate3d(0,0,0)}
-}
 .loading{
   position:absolute;inset:0;display:grid;place-items:center;
   background:#071426;color:#c8d9ec;text-align:center;
@@ -87,7 +76,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   padding:22px 12px 28px;color:#f1f8ff;text-align:center
 }
 .games-hub[hidden]{display:none!important}
-.games-hub.is-leaving{z-index:3;pointer-events:none}
+
 .games-shell{width:min(100%,680px);margin:auto}
 .games-kicker{font-size:10px;letter-spacing:.18em;color:#8fcaff;font-weight:900}
 .games-heading h1{font-size:clamp(23px,5vw,32px);margin:7px 0 5px}
@@ -212,53 +201,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   const tabs=Array.from(document.querySelectorAll('.tab'));
   const loading=document.getElementById('loading');
 
-  // Keep app iframes stationary; animate only the vertical black curtain.
-  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Instant switching: no curtain, animations, or transition timers.
   const frames=new Map(),ready=new Set();
   let current='voltes',activeGame=null,warmupStarted=false;
-  let wipeAnimations=[],wipeVersion=0,wipeTimeout=null;
   function activeKey(){return current==='games'?activeGame:current}
   function activeScreen(){return current==='games'&&!activeGame?hub:frames.get(activeKey())||null}
-  function clearWipe(){
-    ++wipeVersion;
-    if(wipeTimeout!==null){clearTimeout(wipeTimeout);wipeTimeout=null;}
-    for(const animation of wipeAnimations)animation.cancel();
-    wipeAnimations=[];
-    stage.classList.remove('is-shutter-transition');
-    for(const frame of frames.values())frame.classList.remove('is-leaving');
-    hub.classList.remove('is-leaving');
-    hub.hidden=!(current==='games'&&!activeGame);
-    // If the newly selected iframe is still loading, restore its spinner
-    // only after the curtain has fully cleared.
-    const active=activeKey();
-    loading.hidden=!active||ready.has(active);
-  }
-  function playVerticalBlackCurtain(outgoing){
-    if(stage.clientWidth<100||stage.clientHeight<100)return;
-    stage.classList.add('is-shutter-transition');
-    const version=++wipeVersion;
-    try {
-      wipeAnimations=[
-        // The outgoing page stays visible during the downward wipe.
-        // Hide the old page only once the descending curtain fully covers it.
-        outgoing.animate([
-          {opacity:1,offset:0},
-          {opacity:1,offset:.99},
-          {opacity:0,offset:1}
-        ],{duration:0,easing:'linear',fill:'both'})
-      ];
-    } catch (_) {
-      if(wipeVersion===version)clearWipe();
-      return;
-    }
-    // Guard against suspended animation events or interrupted tab switches.
-    wipeTimeout=setTimeout(()=>{
-      if(wipeVersion===version)clearWipe();
-    },0);
-    Promise.all(wipeAnimations.map(a=>a.finished.catch(()=>{}))).then(()=>{
-      if(wipeVersion===version)clearWipe();
-    });
-  }
   function notifyGameVisibility(){
     for(const key of GAMES){
       const frame=frames.get(key);
@@ -313,58 +260,43 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     }
   }
   document.addEventListener('fullscreenchange',enforceVisibleTabs);
-  function show(previous=null){
+  function show(){
     enforceVisibleTabs();
-    // Interrupting a transition is safe even with rapid repeated tab taps.
-    clearWipe();
     const active=activeKey();
     for(const tab of tabs){
       tab.setAttribute('aria-selected',tab.dataset.app===current?'true':'false');
     }
     if(active)createFrame(active);
-    const incoming=active?frames.get(active):hub;
-    // Keep the loader behind the curtain while the incoming iframe finishes loading.
-    const animate=!!previous&&previous!==incoming&&
-      stage.clientWidth>=100&&stage.clientHeight>=100&&
-      !reducedMotion.matches&&document.visibilityState==='visible'&&
-      typeof previous.animate==='function'&&typeof incoming.animate==='function';
     for(const [id,frame] of frames){
       const visible=id===active;
-      const leaving=animate&&frame===previous;
       frame.classList.toggle('active',visible);
-      frame.classList.toggle('is-leaving',leaving);
       if(visible)frame.removeAttribute('inert');
       else frame.setAttribute('inert','');
       frame.setAttribute('aria-hidden',visible?'false':'true');
     }
-    hub.hidden=!!active&&!(animate&&previous===hub);
-    hub.classList.toggle('is-leaving',animate&&previous===hub);
+    hub.hidden=!!active;
     hub.setAttribute('aria-hidden',active?'true':'false');
-    loading.hidden=animate||!active||ready.has(active);
+    loading.hidden=!active||ready.has(active);
     if(active&&!ready.has(active))loading.textContent='Άνοιγμα '+apps[active].name+'…';
     notifyGameVisibility();
-    if(animate)playVerticalBlackCurtain(previous);
   }
   function select(key){
     if(key!=='games'&&(!apps[key]||GAMES.has(key)))return;
-    const previous=activeScreen();
     current=key;
     activeGame=null;
-    show(previous);
+    show();
   }
   function openGame(key){
     if(!GAMES.has(key))return;
-    const previous=activeScreen();
     current='games';
     activeGame=key;
-    show(previous);
+    show();
   }
   tabs.forEach(tab=>tab.addEventListener('click',()=>select(tab.dataset.app)));
   hub.querySelectorAll('[data-game]').forEach(btn=>
     btn.addEventListener('click',()=>openGame(btn.dataset.game)));
   document.addEventListener('visibilitychange',()=>{
     notifyGameVisibility();
-    if(document.visibilityState==='hidden')clearWipe();
   });
   window.addEventListener('pagehide',()=>{
     for(const key of GAMES){
