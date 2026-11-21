@@ -21,7 +21,7 @@ const {chromium}=require('playwright');
       let published=false;
       for(let tries=0;tries<12;tries++){
         await page.goto(base+'?audit='+tries,{waitUntil:'domcontentloaded',timeout:30000});
-        published=await page.locator('script').evaluateAll(xs=>xs.some(x=>x.textContent.includes('apps-desktop-game-fit')));
+        published=await page.locator('script').evaluateAll(xs=>xs.some(x=>x.textContent.includes('.suite-game-banner,.hero{display:none!important}')));
         if(published)break;
         await page.waitForTimeout(5000);
       }
@@ -66,6 +66,11 @@ const {chromium}=require('playwright');
         };
       });
       assert.ok(data.title&&data.buttons>0,'Real game document loaded: '+key+' '+JSON.stringify(data));
+      if(live){
+        assert.equal(data.hasHorizontalOverflow,false,'No horizontal scrolling: '+key);
+        assert.ok(data.document[1]<=data.viewport[1]+2,
+          'No vertical scrolling: '+key+' '+JSON.stringify(data));
+      }
       findings.push({game:key,frame:[Math.round(rect.width),Math.round(rect.height)],...data});
       await page.locator('#gamesBack').click();
       assert.equal(await page.locator('#gamesList').isVisible(),true,'Back returns to chooser: '+key);
