@@ -73,11 +73,13 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   position:absolute;inset:0;z-index:1;overflow-y:auto;
   display:flex;align-items:flex-start;justify-content:center;
   background:radial-gradient(ellipse at 50% 5%,#183d6d 0%,#071426 70%);
-  padding:22px 12px 28px;color:#f1f8ff;text-align:center
+  padding:12px 12px 28px;color:#f1f8ff;text-align:center
 }
 .games-hub[hidden]{display:none!important}
 
 .games-shell{width:min(100%,680px);margin:auto}
+.games-hero-art{display:block;width:100%;height:clamp(74px,12dvh,112px);object-fit:cover;object-position:center;border:1px solid rgba(111,188,255,.38);border-radius:12px;background:#102e56;box-shadow:0 10px 25px rgba(0,6,26,.32);margin:0 auto 12px}
+@media(min-width:761px){.games-hero-art{height:150px}}
 .games-kicker{font-size:10px;letter-spacing:.18em;color:#8fcaff;font-weight:900}
 .games-heading h1{font-size:clamp(23px,5vw,32px);margin:7px 0 5px}
 .games-heading p{font-size:12px;line-height:1.5;color:#bed8f2;margin:0 0 12px}
@@ -128,7 +130,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   <main class="stage" id="stage" aria-label="Περιεχόμενο εφαρμογής">
     <section class="games-hub" id="gamesHub" aria-label="Επιλογή παιχνιδιού" hidden>
       <div class="games-shell">
-        <div class="games-heading"><span class="games-kicker">ΕΠΙΛΟΓΗ ΠΑΙΧΝΙΔΙΟΥ</span><h1>Παιχνίδια</h1><p>Διάλεξε παιχνίδι. Η πρόοδός σου αποθηκεύεται ξεχωριστά στη συσκευή.</p></div>
+        <img class="games-hero-art" src="./games-hero.svg" width="900" height="300" alt="Παιχνίδια — μπλε φωτεινή συλλογή με σκάκι, κάρτες και ζάρια" decoding="async">
+        <div class="games-heading"><h1>Επιλογή παιχνιδιού</h1><p>Διάλεξε παιχνίδι. Η πρόοδός σου αποθηκεύεται ξεχωριστά στη συσκευή.</p></div>
         <div class="games-options">
           <button class="game-choice" type="button" data-game="sudokufunny" aria-label="Άνοιγμα SudokuFunny">
             <span class="game-mark sudoku-mark" aria-hidden="true">1 2 3<br>4 5 6<br>7 8 9</span>
