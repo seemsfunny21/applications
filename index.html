@@ -65,7 +65,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .stage.is-shutter-transition{background:#000}
 .stage.is-shutter-transition::after{
   content:"";position:absolute;inset:0;z-index:4;background:#000;pointer-events:none;
-  animation:vertical-black-curtain 1000ms ease-in both
+  animation:vertical-black-curtain 700ms ease-in both
 }
 @keyframes vertical-black-curtain{
   from{transform:translate3d(0,-100%,0)}
@@ -245,7 +245,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
           {opacity:1,offset:0},
           {opacity:1,offset:.99},
           {opacity:0,offset:1}
-        ],{duration:1000,easing:'ease-in',fill:'both'})
+        ],{duration:700,easing:'ease-in',fill:'both'})
       ];
     } catch (_) {
       if(wipeVersion===version)clearWipe();
@@ -254,7 +254,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     // Guard against suspended animation events or interrupted tab switches.
     wipeTimeout=setTimeout(()=>{
       if(wipeVersion===version)clearWipe();
-    },1250);
+    },950);
     Promise.all(wipeAnimations.map(a=>a.finished.catch(()=>{}))).then(()=>{
       if(wipeVersion===version)clearWipe();
     });
