@@ -210,6 +210,23 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
       if(key==="monopolyfunny"){
         css+="@media(min-width:900px){header{padding:4px 9px!important;min-height:34px!important}.layout{max-width:min(900px,calc(100dvh - 114px))!important;padding-bottom:0!important}}";
       }
+      // Full HD (1920x1080) fit. These rules affect only games embedded
+      // in /apps and leave phone / standalone layouts untouched.
+      if(key==="chessfunny"){
+        css+="@media(min-width:1500px) and (min-height:900px){.suite-game-banner{height:38px!important;margin-bottom:4px!important}}";
+      }
+      if(key==="tavlifunny"){
+        css+="@media(min-width:1500px) and (min-height:900px){.shell{max-width:min(1800px,calc((100dvh - 140px)*2.28))!important}.disc{width:min(93%,clamp(28px,3.9dvh,42px))!important}.bar-disc,.bearing-disc{width:min(92%,clamp(24px,3.4dvh,36px))!important}}";
+      }
+      if(key==="tichufunny"||key==="tichufunnyonline"){
+        css+="@media(min-width:1500px) and (min-height:900px){.app{max-width:1400px!important;padding:7px 12px 9px!important}.panel{min-height:740px!important;padding:12px!important}.table{min-height:465px!important}.pot{min-height:240px!important;max-width:1080px!important}.hand{min-height:125px!important;gap:8px!important}.hand .card{width:clamp(48px,3.6vw,68px)!important;height:clamp(74px,5vw,92px)!important}.pot .card{width:40px!important;height:57px!important}.seat{min-height:70px!important}.hero{margin-bottom:6px!important}}";
+      }
+      if(key==="solitairefunny"){
+        css+="@media(min-width:1500px) and (min-height:950px){.shell{transform:scale(1.27);transform-origin:top center!important}}";
+      }
+      if(key==="minesweeperfunny"){
+        css+="@media(min-width:1500px) and (min-height:900px){.shell{max-width:1040px!important}.board[style*=\"--columns: 9\"]{--sz:60px!important}.board[style*=\"--columns: 12\"]{--sz:57px!important}.board[style*=\"--columns: 16\"]{--sz:48px!important}}";
+      }
       style.textContent=css;
       doc.head.appendChild(style);
     }catch(_){/* Cross-origin development previews keep native game styles. */}
