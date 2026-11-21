@@ -23,7 +23,7 @@ const {chromium}=require('playwright');
       assert.equal(await iframe.count(),1,'Exactly one game frame: '+key);
       const rect=await iframe.boundingBox();
       assert.ok(rect&&rect.width>=1360&&rect.height>=700,'Full-size game frame: '+key+' '+JSON.stringify(rect));
-      const frame=await iframe.contentFrame();
+      const frame=await (await iframe.elementHandle()).contentFrame();
       const target=new URL(await iframe.getAttribute('src'),page.url());
       if(!frame.url().startsWith(target.origin+target.pathname)){
         await page.waitForEvent('framenavigated',{
