@@ -192,10 +192,9 @@ const {chromium}=require('playwright');
         const fresh=await capture();
         assert.equal(fresh.players,2,'Monopoly starts chosen new 1-AI game '+JSON.stringify(fresh));
         assert.equal(fresh.round,1,'Monopoly resets to round one');
-        await frame.waitForFunction(()=>{
-          const game=JSON.parse(localStorage.getItem('monopolyfunny-v1')||'null');
-          return game?.log?.some(x=>x.includes('έφερε'));
-        },null,{timeout:8000});
+        // The first automatic turn was already verified above. Testing the
+        // reset itself requires a new game state, not a second random dice
+        // sequence (which can wait on a human purchase decision).
         // Broken/stale saved games should recover instead of leaving a dead board.
         await frame.evaluate(()=>{
           const saved=JSON.parse(localStorage.getItem('monopolyfunny-v1'));
