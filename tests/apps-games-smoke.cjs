@@ -8,7 +8,8 @@ const {chromium}=require('playwright');
   const executablePath=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium'].find(fs.existsSync);
   if(!executablePath)throw Error('Chromium/Chrome unavailable');
   const browser=await chromium.launch({headless:true,executablePath,args:['--no-sandbox']});
-  const context=await browser.newContext({viewport:{width:1366,height:768},locale:'el-GR',serviceWorkers:'block'});
+  const viewport={width:1920,height:1080}; // User's actual desktop resolution.
+  const context=await browser.newContext({viewport,locale:'el-GR',serviceWorkers:'block'});
   const page=await context.newPage();
   const keys=['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','chessfunny',
     'tavlifunny','tichufunny','tichufunnyonline','monopolyfunny','quizfunny'];
@@ -36,7 +37,7 @@ const {chromium}=require('playwright');
       const iframe=page.locator('#gamesFrame iframe.game-iframe');
       assert.equal(await iframe.count(),1,'Exactly one game frame: '+key);
       const rect=await iframe.boundingBox();
-      assert.ok(rect&&rect.width>=1360&&rect.height>=700,'Full-size game frame: '+key+' '+JSON.stringify(rect));
+      assert.ok(rect&&rect.width>=viewport.width-6&&rect.height>=viewport.height-52,'Full-size game frame: '+key+' '+JSON.stringify(rect));
       const frame=await (await iframe.elementHandle()).contentFrame();
       const target=new URL(await iframe.getAttribute('src'),page.url());
       if(!frame.url().startsWith(target.origin+target.pathname)){
@@ -86,7 +87,7 @@ const {chromium}=require('playwright');
       assert.ok(rect.width>=width-6&&rect.height>=1020,'Full-height chess at '+width);
       await page.locator('#gamesBack').click();
     }
-    console.log('PASS '+(live?'PUBLISHED ':'LOCAL ')+'/apps: ten game URLs, initial HTML, full-screen fit, and back navigation');
+    console.log('PASS '+(live?'PUBLISHED ':'LOCAL ')+'/apps at 1920x1080: ten game URLs, initial HTML, full-screen fit, and back navigation');
     console.log('LAYOUT_AUDIT '+JSON.stringify(findings));
   }finally{
     await context.close();
