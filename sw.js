@@ -2,9 +2,9 @@
    The PWAs share a GitHub Pages origin, so caches are strictly namespaced.
    This service worker controls ONLY /applications/. */
 const PREFIX = "applications-shell-";
-const CACHE = PREFIX + "v18-game-symmetry";
+const CACHE = PREFIX + "v19-category-banners";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest",
-  "./icon.svg", "./icon-192.png", "./icon-512.png"];
+  "./icon.svg", "./icon-192.png", "./icon-512.png", "./games-hero.svg"];
 
 self.addEventListener("install", event => {
   event.waitUntil(
