@@ -26,3 +26,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
           node tests/apps-games-smoke.cjs
+      - name: Audit the published Pages site (same-origin frames)
+        env:
+          APPS_TEST_URL: https://seemsfunny21.github.io/applications/apps/
+        run: node tests/apps-games-smoke.cjs
