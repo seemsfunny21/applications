@@ -14,7 +14,21 @@ const {chromium}=require('playwright');
     'tavlifunny','tichufunny','tichufunnyonline','monopolyfunny','quizfunny'];
   const findings=[];
   try{
-    await page.goto('http://127.0.0.1:8765/apps/',{waitUntil:'domcontentloaded',timeout:25000});
+    const base=process.env.APPS_TEST_URL||'http://127.0.0.1:8765/apps/';
+    const live=base.startsWith('https:');
+    if(live){
+      // Avoid auditing the previous Pages deployment when workflows overlap.
+      let published=false;
+      for(let tries=0;tries<12;tries++){
+        await page.goto(base+'?audit='+tries,{waitUntil:'domcontentloaded',timeout:30000});
+        published=await page.locator('script').evaluateAll(xs=>xs.some(x=>x.textContent.includes('apps-desktop-game-fit')));
+        if(published)break;
+        await page.waitForTimeout(5000);
+      }
+      assert.ok(published,'The deployed /apps version has the viewport fixes');
+    }else{
+      await page.goto(base,{waitUntil:'domcontentloaded',timeout:25000});
+    }
     assert.equal(await page.locator('#gamesList [data-game]').count(),10,'Exactly ten games offered');
     for(const key of keys){
       await page.locator('#gamesList [data-game="'+key+'"]').click();
@@ -31,7 +45,10 @@ const {chromium}=require('playwright');
           timeout:25000
         });
       }
-      await frame.waitForLoadState('domcontentloaded',{timeout:25000});
+      await frame.waitForLoadState('load',{timeout:25000});
+      if(live){
+        await frame.waitForFunction(()=>!!document.getElementById('apps-desktop-game-fit'),{timeout:10000});
+      }
       const data=await frame.evaluate(()=>{
         const root=document.documentElement,body=document.body;
         return {
@@ -41,7 +58,11 @@ const {chromium}=require('playwright');
           document:[root.scrollWidth,root.scrollHeight],
           hasHorizontalOverflow:root.scrollWidth>root.clientWidth+2,
           hasVerticalOverflow:root.scrollHeight>root.clientHeight+2,
-          text:(body?.innerText||'').slice(0,90)
+          text:(body?.innerText||'').slice(0,90),
+          geometry:Object.fromEntries(['header','.hero','.suite-game-banner','.shell','.app-shell','.layout','.board','.board-wrap','.game','.panel','.footer','.foot'].map(q=>{
+            const el=document.querySelector(q),r=el?.getBoundingClientRect();
+            return [q,r?{y:Math.round(r.y),height:Math.round(r.height),width:Math.round(r.width)}:null];
+          }).filter(x=>x[1]))
         };
       });
       assert.ok(data.title&&data.buttons>0,'Real game document loaded: '+key+' '+JSON.stringify(data));
@@ -60,7 +81,7 @@ const {chromium}=require('playwright');
       assert.ok(rect.width>=width-6&&rect.height>=1020,'Full-height chess at '+width);
       await page.locator('#gamesBack').click();
     }
-    console.log('PASS /apps: ten game URLs, initial HTML, full-screen fit, and back navigation');
+    console.log('PASS '+(live?'PUBLISHED ':'LOCAL ')+'/apps: ten game URLs, initial HTML, full-screen fit, and back navigation');
     console.log('LAYOUT_AUDIT '+JSON.stringify(findings));
   }finally{
     await context.close();
