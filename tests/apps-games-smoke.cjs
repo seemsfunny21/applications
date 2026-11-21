@@ -22,7 +22,7 @@ const {chromium}=require('playwright');
       let published=false;
       for(let tries=0;tries<12;tries++){
         await page.goto(base+'?audit='+tries,{waitUntil:'domcontentloaded',timeout:30000});
-        published=await page.locator('script').evaluateAll(xs=>xs.some(x=>x.textContent.includes('.panel{min-height:840px!important')&&x.textContent.includes('20261121-tvsettings-v2')));
+        published=await page.locator('script').evaluateAll(xs=>xs.some(x=>x.textContent.includes('20261121-gear-clean-v3')&&x.textContent.includes('20261121-gear-help-v2')));
         if(published)break;
         await page.waitForTimeout(5000);
       }
@@ -76,15 +76,52 @@ const {chromium}=require('playwright');
 
       // Requested TV refinements: verify actual DOM placement and legibility.
       if(key==='chessfunny'){
-        assert.equal(await frame.locator('.controls #new').count(),0,
-          'Chess restart no longer under the board');
-        assert.equal(await frame.locator('#settings #new').count(),1,
-          'Chess restart is in Settings');
+        assert.equal(await frame.locator('.controls').count(),0,
+          'Chess has no extra commands or Settings below/alongside the board');
+        assert.equal(await frame.locator('#gear2').count(),0,
+          'Chess has exactly one Settings gear at the top');
+        for(const action of ['turn','wins','aiLevel','undo','hint','new','clearWins','difficulty']){
+          assert.equal(await frame.locator('#settings #'+action).count(),1,
+            'Chess '+action+' belongs inside top Settings');
+        }
+        const bigBoard=await frame.locator('.board').boundingBox();
+        if(live)assert.ok(bigBoard.width>=840&&bigBoard.height>=840,
+          'Chess board enlarged to TV height '+JSON.stringify(bigBoard));
+        await frame.locator('#gear').click();
+        await frame.locator('#hint').click();
+        assert.equal(await frame.locator('#settings').isHidden(),true,
+          'Chess hint closes gear so the suggestion is visible on the board');
+        assert.equal(await frame.locator('.sq.hint').count(),1,
+          'Chess hint still functions from inside Settings');
         await frame.locator('#gear').click();
         await frame.locator('#new').click();
         assert.equal(await frame.locator('#settings').isHidden(),true,
           'Chess new match returns from Settings');
-        assert.equal(await frame.locator('#board .sq').count(),64,'Chess reset renders full board');
+        assert.equal(await frame.locator('#board .sq').count(),64,
+          'Chess reset renders full board');
+        assert.equal(await frame.locator('#board .piece').count(),32,
+          'Chess reset restores starting position');
+      }
+      if(key==='minesweeperfunny'){
+        assert.equal(await frame.locator('.help-details').count(),0,
+          'No instruction block below the Minesweeper board');
+        assert.equal(await frame.locator('.hero #gear').count(),1,
+          'Minesweeper has a top-right Settings gear');
+        await frame.locator('#gear').click();
+        assert.equal(await frame.locator('#settingsDialog').evaluate(el=>el.open),true,
+          'Minesweeper Settings open');
+        assert.ok((await frame.locator('#settingsDialog').innerText()).includes('Οδηγίες χειρισμού'),
+          'Minesweeper instructions moved inside the Settings dialog');
+        assert.equal(await frame.locator('#settingsDialog .funny-help-btn').count(),1,
+          'Full game instructions also accessible from the gear');
+        await frame.locator('#settingsDialog .funny-help-btn').click();
+        assert.equal(await frame.locator('.funny-help-overlay').isVisible(),true,
+          'Full Minesweeper tutorial opens');
+        await frame.locator('.funny-help-close').click();
+        assert.equal(await frame.locator('.funny-help-overlay').isHidden(),true,
+          'Full Minesweeper tutorial closes');
+        assert.equal(await frame.locator('#board .cell').count(),81,
+          'Minesweeper board remains playable after opening help');
       }
       if(key==='reversifunny'){
         assert.equal(await frame.locator('.tool-row #newButton').count(),0,
