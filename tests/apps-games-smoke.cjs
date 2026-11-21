@@ -22,7 +22,7 @@ const {chromium}=require('playwright');
       let published=false;
       for(let tries=0;tries<12;tries++){
         await page.goto(base+'?audit='+tries,{waitUntil:'domcontentloaded',timeout:30000});
-        published=await page.locator('script').evaluateAll(xs=>xs.some(x=>x.textContent.includes('.suite-game-banner,.hero{display:none!important}')));
+        published=await page.locator('script').evaluateAll(xs=>xs.some(x=>x.textContent.includes('.panel{min-height:840px!important')&&x.textContent.includes('20261121-tvsettings-v2')));
         if(published)break;
         await page.waitForTimeout(5000);
       }
@@ -73,6 +73,62 @@ const {chromium}=require('playwright');
           'No vertical scrolling: '+key+' '+JSON.stringify(data));
       }
 
+
+      // Requested TV refinements: verify actual DOM placement and legibility.
+      if(key==='chessfunny'){
+        assert.equal(await frame.locator('.controls #new').count(),0,
+          'Chess restart no longer under the board');
+        assert.equal(await frame.locator('#settings #new').count(),1,
+          'Chess restart is in Settings');
+        await frame.locator('#gear').click();
+        await frame.locator('#new').click();
+        assert.equal(await frame.locator('#settings').isHidden(),true,
+          'Chess new match returns from Settings');
+        assert.equal(await frame.locator('#board .sq').count(),64,'Chess reset renders full board');
+      }
+      if(key==='reversifunny'){
+        assert.equal(await frame.locator('.tool-row #newButton').count(),0,
+          'No new match below Reversi board');
+        assert.equal(await frame.locator('#settingsForm #newButton').count(),1,
+          'Reversi restart is inside Settings');
+        await frame.locator('#settingsButton').click();
+        await frame.locator('input[name="mode"][value="local"]').check();
+        await frame.locator('#newButton').click();
+        assert.equal(await frame.locator('#settingsDialog').evaluate(x=>x.open),false,
+          'Reversi restart closes Settings');
+        const saved=await frame.evaluate(()=>JSON.parse(localStorage.getItem('reversifunny.game.v1')));
+        assert.equal(saved?.mode,'local','New Reversi match uses mode selected in Settings');
+        assert.equal(saved?.history?.length,0,'Reversi new game is freshly initialized');
+      }
+      if(key==='solitairefunny'){
+        assert.equal(await frame.locator('.foot').count(),0,
+          'No redundant instruction text below Solitaire');
+      }
+      if(live&&key==='tavlifunny'){
+        const b=await frame.locator('.board-wrap').boundingBox();
+        assert.ok(b.width>1850&&b.height>800,
+          'TV Tavli fills width AND height '+JSON.stringify(b));
+      }
+      if(live&&(key==='tichufunny'||key==='tichufunnyonline')){
+        const p=await frame.locator('.panel').first().boundingBox();
+        const b=await frame.locator('#cardTable').boundingBox();
+        assert.ok(p.width>1600&&p.height>=830&&b.height>=690,
+          'TV Tichu table occupies display '+JSON.stringify({p,b}));
+      }
+      if(key==='quizfunny'){
+        await frame.locator('#next').click();
+        await frame.locator('.answers .answer').first().waitFor({timeout:10000});
+        const readable=await frame.evaluate(()=>{
+          const q=document.querySelector('#question'),a=document.querySelector('.answer'),
+           qr=q.getBoundingClientRect(),ar=a.getBoundingClientRect();
+          return {qHeight:qr.height,answerHeight:ar.height,
+            font:parseFloat(getComputedStyle(a).fontSize),count:document.querySelectorAll('.answer').length};
+        });
+        assert.equal(readable.count,4,'Quiz displays four answer tiles');
+        assert.ok(readable.font>=20&&readable.answerHeight>=110&&readable.qHeight<=225,
+          'Quiz question compact and answer tiles large '+JSON.stringify(readable));
+        console.log('PASS TV QUIZ ANSWERS '+JSON.stringify(readable));
+      }
       if(key==='monopolyfunny'){
         // Assert a game can START, not just render its 40 square board.
         const capture=()=>frame.evaluate(()=>{
