@@ -97,12 +97,9 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   background:linear-gradient(145deg,#1c507a,#0c335b);
   box-shadow:0 0 26px #138bdb2a}
 .sudoku-mark{font-size:15px;font-weight:850;letter-spacing:7px;text-align:center;padding-left:7px;white-space:pre}
-.reversi-mark{width:70px;padding:6px;display:grid;place-items:center}
-.reversi-board{display:grid;grid-template-columns:repeat(4,11px);grid-template-rows:repeat(4,11px);background:#157451;border:1px solid #a7e6d2;border-radius:3px;overflow:hidden;box-shadow:0 0 12px #21c79550}
-.reversi-cell{display:grid;place-items:center;border:1px solid #0b543b}
-.reversi-disc{width:9px;height:9px;border-radius:50%;box-shadow:inset -1px -1px 2px #0005,0 1px 2px #0008}
-.reversi-disc.white{background:#f5fbff}
-.reversi-disc.black{background:#111a29;border:1px solid #576d84}
+.reversi-mark{font-size:27px;font-weight:850;line-height:1;white-space:normal;color:#eef8ff;text-shadow:0 0 8px #3cbdff;padding:5px 9px}
+.reversi-pieces{display:grid;grid-template-columns:repeat(2,1em);grid-template-rows:repeat(2,1em);gap:2px;place-items:center}
+.reversi-pieces span{display:block;line-height:1}
 .game-choice strong{font-size:15px}
 .game-choice>span:not(.game-mark){font-size:12px;color:#cee5ff}
 .game-choice small{color:#a7c8e6;font-size:10px;line-height:1.35}
@@ -136,7 +133,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
             <strong>SudokuFunny</strong><span>Sudoku 9×9</span><small>4 επίπεδα · Σημειώσεις</small>
           </button>
           <button class="game-choice" type="button" data-game="reversifunny" aria-label="Άνοιγμα ReversiFunny">
-            <span class="game-mark reversi-mark" aria-hidden="true"><span class="reversi-board"><span class="reversi-cell"></span><span class="reversi-cell"></span><span class="reversi-cell"></span><span class="reversi-cell"></span><span class="reversi-cell"></span><span class="reversi-cell"><span class="reversi-disc white"></span></span><span class="reversi-cell"><span class="reversi-disc black"></span></span><span class="reversi-cell"></span><span class="reversi-cell"></span><span class="reversi-cell"><span class="reversi-disc black"></span></span><span class="reversi-cell"><span class="reversi-disc white"></span></span><span class="reversi-cell"></span><span class="reversi-cell"></span><span class="reversi-cell"></span><span class="reversi-cell"></span><span class="reversi-cell"></span></span></span>
+            <span class="game-mark reversi-mark" aria-hidden="true"><span class="reversi-pieces"><span>●</span><span>○</span><span>○</span><span>●</span></span></span>
             <strong>ReversiFunny</strong><span>Reversi 8×8</span><small>Υπολογιστής ή 2 παίκτες</small>
           </button>
           <button class="game-choice" type="button" data-game="minesweeperfunny" aria-label="Άνοιγμα MinesweeperFunny">
