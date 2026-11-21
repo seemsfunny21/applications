@@ -172,6 +172,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
             <span class="game-mark" aria-hidden="true">🃏</span>
             <strong>TichuFunny Online</strong><span>Με φίλους ή AI</span><small>4 καρέκλες · δωμάτια με κωδικό</small>
           </button>
+          <button class="game-choice" type="button" data-game="monopolyfunny" aria-label="Άνοιγμα MonopolyFunny">
+            <span class="game-mark" aria-hidden="true">🎲</span>
+            <strong>MonopolyFunny</strong><span>Ακίνητα και στρατηγική</span><small>Εσύ εναντίον AI</small>
+          </button>
           <button class="game-choice" type="button" data-game="quizfunny" aria-label="Άνοιγμα QuizFunny">
             <span class="game-mark" aria-hidden="true">🏆</span>
             <strong>QuizFunny</strong><span>Παιχνίδι γνώσεων</span><small>15 ερωτήσεις · 1.000.000 €</small>
@@ -201,9 +205,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     tavlifunny:{name:'TavliFunny',url:'./tavlifunny/?v=20261120-native-dialog'},
     tichufunny:{name:'TichuFunny',url:'./tichufunny/?v=20261120-native-dialog'},
     tichufunnyonline:{name:'TichuFunny Online',url:'./tichufunnyonline/?v=20261120-native-dialog'},
-    quizfunny:{name:'QuizFunny',url:'https://seemsfunny21.github.io/quizfunny/?v=20261121e'}
+    quizfunny:{name:'QuizFunny',url:'https://seemsfunny21.github.io/quizfunny/?v=20261121e'},
+    monopolyfunny:{name:'MonopolyFunny',url:'https://seemsfunny21.github.io/monopolyfunny/?v=20261121compact'}
   });
-  const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','chessfunny','tavlifunny','tichufunny','tichufunnyonline','quizfunny']);
+  const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','chessfunny','tavlifunny','tichufunny','tichufunnyonline','quizfunny','monopolyfunny']);
   const stage=document.getElementById('stage');
   const hub=document.getElementById('gamesHub');
   const tabs=Array.from(document.querySelectorAll('.tab'));
