@@ -90,14 +90,32 @@ const {chromium}=require('playwright');
         const auto=await capture();
         assert.ok(auto.log.some(x=>x.includes('έφερε')),
           'Monopoly auto-turn actually starts '+JSON.stringify({before,auto}));
-        await frame.locator('#settings').click();
-        await frame.locator('#dialogActions button', {hasText:'Νέο παιχνίδι'}).click();
+        // The prominently visible start action must work, without Settings.
+        assert.equal(await frame.locator('#newGame').count(),1,
+          'Monopoly has an explicit start/restart button');
+        await frame.locator('#newGame').click();
         await frame.locator('#dialogActions button', {hasText:'1 AI'}).click();
         await frame.locator('#dialogActions button', {hasText:'Νέα παρτίδα'}).click();
         const fresh=await capture();
         assert.equal(fresh.players,2,'Monopoly starts chosen new 1-AI game '+JSON.stringify(fresh));
         assert.equal(fresh.round,1,'Monopoly resets to round one');
-        console.log('PASS MONOPOLY GAMEPLAY '+JSON.stringify({before,auto,fresh}));
+        await frame.waitForFunction(()=>{
+          const game=JSON.parse(localStorage.getItem('monopolyfunny-v1')||'null');
+          return game?.log?.some(x=>x.includes('έφερε'));
+        },null,{timeout:8000});
+        // Broken/stale saved games should recover instead of leaving a dead board.
+        await frame.evaluate(()=>{
+          const saved=JSON.parse(localStorage.getItem('monopolyfunny-v1'));
+          saved.phase='unsupported-old-phase';
+          localStorage.setItem('monopolyfunny-v1',JSON.stringify(saved));
+        });
+        await frame.goto(frame.url(),{waitUntil:'load'});
+        const recovered=await capture();
+        assert.equal(recovered.phase,'roll','Monopoly repairs invalid saved game on launch');
+        assert.equal(recovered.players,3,'Recovery restores default game instead of a dead screen');
+        assert.equal(await frame.locator('#newGame').count(),1,
+          'Start action remains visible after save recovery');
+        console.log('PASS MONOPOLY GAMEPLAY '+JSON.stringify({before,auto,fresh,recovered}));
       }
       findings.push({game:key,frame:[Math.round(rect.width),Math.round(rect.height)],...data});
       await page.locator('#gamesBack').click();
