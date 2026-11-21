@@ -72,6 +72,33 @@ const {chromium}=require('playwright');
         assert.ok(data.document[1]<=data.viewport[1]+2,
           'No vertical scrolling: '+key+' '+JSON.stringify(data));
       }
+
+      if(key==='monopolyfunny'){
+        // Assert a game can START, not just render its 40 square board.
+        const capture=()=>frame.evaluate(()=>{
+          const game=JSON.parse(localStorage.getItem('monopolyfunny-v1')||'null');
+          return {round:game?.round,phase:game?.phase,players:game?.players?.length,
+            log:game?.log||[],modal:document.getElementById('modal')?.open,
+            settings:!!document.getElementById('settings'),
+            buttons:[...document.querySelectorAll('#dialogActions button')].map(x=>x.textContent)};
+        });
+        const before=await capture();
+        await frame.waitForFunction(()=>{
+          const data=JSON.parse(localStorage.getItem('monopolyfunny-v1')||'null');
+          return data?.log?.some(x=>x.includes('έφερε'));
+        },{timeout:7500});
+        const auto=await capture();
+        assert.ok(auto.log.some(x=>x.includes('έφερε')),
+          'Monopoly auto-turn actually starts '+JSON.stringify({before,auto}));
+        await frame.locator('#settings').click();
+        await frame.locator('#dialogActions button', {hasText:'Νέο παιχνίδι'}).click();
+        await frame.locator('#dialogActions button', {hasText:'1 AI'}).click();
+        await frame.locator('#dialogActions button', {hasText:'Νέα παρτίδα'}).click();
+        const fresh=await capture();
+        assert.equal(fresh.players,2,'Monopoly starts chosen new 1-AI game '+JSON.stringify(fresh));
+        assert.equal(fresh.round,1,'Monopoly resets to round one');
+        console.log('PASS MONOPOLY GAMEPLAY '+JSON.stringify({before,auto,fresh}));
+      }
       findings.push({game:key,frame:[Math.round(rect.width),Math.round(rect.height)],...data});
       await page.locator('#gamesBack').click();
       assert.equal(await page.locator('#gamesList').isVisible(),true,'Back returns to chooser: '+key);
