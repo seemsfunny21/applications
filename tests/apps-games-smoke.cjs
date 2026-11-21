@@ -25,7 +25,12 @@ const {chromium}=require('playwright');
       assert.ok(rect&&rect.width>=1360&&rect.height>=700,'Full-size game frame: '+key+' '+JSON.stringify(rect));
       const frame=await iframe.contentFrame();
       const target=new URL(await iframe.getAttribute('src'),page.url());
-      await frame.waitForURL(url=>url.origin===target.origin&&url.pathname===target.pathname,{timeout:25000});
+      if(!frame.url().startsWith(target.origin+target.pathname)){
+        await page.waitForEvent('framenavigated',{
+          predicate:item=>item===frame&&item.url().startsWith(target.origin+target.pathname),
+          timeout:25000
+        });
+      }
       await frame.waitForLoadState('domcontentloaded',{timeout:25000});
       const data=await frame.evaluate(()=>{
         const root=document.documentElement,body=document.body;
