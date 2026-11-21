@@ -81,10 +81,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .games-kicker{font-size:10px;letter-spacing:.18em;color:#8fcaff;font-weight:900}
 .games-heading h1{font-size:clamp(23px,5vw,32px);margin:7px 0 5px}
 .games-heading p{font-size:12px;line-height:1.5;color:#bed8f2;margin:0 0 12px}
-.games-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.games-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(160px,auto);align-items:stretch;gap:9px}
 .game-choice{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
-  min-width:0;min-height:146px;padding:10px 8px;cursor:pointer;
+  display:grid;grid-template-rows:52px minmax(22px,auto) minmax(20px,auto) minmax(27px,auto);
+  align-content:center;align-items:center;justify-items:center;gap:5px;
+  min-width:0;min-height:160px;height:100%;padding:8px 7px;cursor:pointer;
   background:linear-gradient(145deg,#163c68,#0a2442);
   border:1px solid #5da8f284;border-radius:18px;
   box-shadow:0 9px 28px #020b1f6b,inset 0 1px #ffffff1e;
@@ -92,7 +93,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 }
 .game-choice:active{filter:brightness(1.18);transform:scale(.98)}
 .game-choice:focus-visible{outline:3px solid #9ddcff;outline-offset:2px}
-.game-mark{height:52px;min-width:70px;display:grid;place-items:center;line-height:1.12;
+.game-mark{height:52px;width:70px;min-width:70px;display:grid;place-items:center;line-height:1.12;
   color:#bde8ff;border:1px solid #84c9ff78;border-radius:14px;
   background:linear-gradient(145deg,#1c507a,#0c335b);
   box-shadow:0 0 26px #138bdb2a}
@@ -100,14 +101,15 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 .reversi-mark{font-size:22px;font-weight:850;line-height:1;color:#eef8ff;text-shadow:0 0 8px #3cbdff;padding:0;display:grid;place-items:center}
 .reversi-pieces{display:grid;grid-template-columns:repeat(2,22px);grid-template-rows:repeat(2,22px);gap:0;place-items:center;width:44px;height:44px}
 .reversi-pieces span{display:grid;place-items:center;width:22px;height:22px;line-height:1}
-.game-choice strong{font-size:15px}
-.game-choice>span:not(.game-mark){font-size:12px;color:#cee5ff}
-.game-choice small{color:#a7c8e6;font-size:10px;line-height:1.35}
+.game-choice strong{font-size:15px;line-height:1.2;display:flex;justify-content:center;align-items:center;min-height:22px;text-wrap:balance;overflow-wrap:anywhere}
+.game-choice>span:not(.game-mark){font-size:12px;line-height:1.2;color:#cee5ff;display:flex;align-items:center;justify-content:center;min-height:20px;text-wrap:balance}
+.game-choice small{color:#a7c8e6;font-size:10px;line-height:1.35;display:flex;align-items:center;justify-content:center;min-height:27px;text-wrap:balance}
 .games-tip{margin:10px 0 0;font-size:11px;color:#a9cae9;line-height:1.5}
 @media(max-width:360px){
-  .games-options{gap:7px}.game-choice{padding:8px 4px;min-height:133px}
-  .game-choice strong{font-size:15px}.game-choice small{font-size:9px}
-  .game-mark{height:46px;min-width:65px}
+  .games-options{gap:7px;grid-auto-rows:minmax(146px,auto)}
+  .game-choice{grid-template-rows:46px minmax(20px,auto) minmax(18px,auto) minmax(22px,auto);gap:4px;padding:8px 4px;min-height:146px}
+  .game-choice strong{font-size:14px}.game-choice small{font-size:9px;min-height:22px}
+  .game-mark{height:46px;width:65px;min-width:65px}
 }
 @media(hover:hover){.game-choice:hover{filter:brightness(1.16);transform:translateY(-2px)}}
 
