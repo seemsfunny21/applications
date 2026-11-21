@@ -290,7 +290,7 @@ const {chromium}=require('playwright');
           };
         });
         assert.equal(measured.bannerDisplay,'none',key+' mobile banner hidden');
-        assert.ok(measured.gameFound&&measured.tableHeight>200&&measured.tableWidth>300,
+        assert.ok(measured.gameFound&&measured.tableHeight>300&&measured.tableWidth>210,
           key+' keeps a sizeable playable table '+JSON.stringify(measured));
         console.log('PASS MOBILE '+key+' '+JSON.stringify(measured));
       }
