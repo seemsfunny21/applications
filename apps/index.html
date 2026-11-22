@@ -153,6 +153,44 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
     monopolyfunny:{name:"MonopolyFunny",url:"https://seemsfunny21.github.io/monopolyfunny/?v=20261121-purchase-modal-v22"},
     quizfunny:{name:"QuizFunny",url:"https://seemsfunny21.github.io/quizfunny/?v=20261121-tvanswers-v2"}
   });
+  const GAME_LIST=$("gamesList");
+  // On-device favourites: count real game launches, never preloads or tab visits.
+  // /applications/ and /applications/apps/ share this one localStorage key.
+  const GAME_USAGE_KEY="applications:game-launch-counts:v1";
+  function gameUsage(){
+    try{
+      const data=JSON.parse(localStorage.getItem(GAME_USAGE_KEY)||"{}");
+      return data&&typeof data==="object"&&!Array.isArray(data)?data:{};
+    }catch(_){return {};}
+  }
+  function recordGameLaunch(key){
+    const data=gameUsage();
+    const previous=Number(data[key]);
+    data[key]=(Number.isSafeInteger(previous)&&previous>0?previous:0)+1;
+    try{localStorage.setItem(GAME_USAGE_KEY,JSON.stringify(data));}catch(_){}
+    sortGamesByUsage();
+  }
+  function sortGamesByUsage(){
+    const list=GAME_LIST;
+    const buttons=[...list.querySelectorAll("[data-game]")];
+    const counts=gameUsage();
+    // Ties keep the original order, including on the first-ever visit.
+    buttons.sort((a,b)=>{
+      const ac=Number(counts[a.dataset.game])||0,bc=Number(counts[b.dataset.game])||0;
+      return bc-ac||Number(a.dataset.originalIndex)-Number(b.dataset.originalIndex);
+    });
+    list.append(...buttons);
+  }
+  function initGameOrdering(){
+    [...GAME_LIST.querySelectorAll("[data-game]")].forEach((button,i)=>{
+      button.dataset.originalIndex=String(i);
+    });
+    sortGamesByUsage();
+    window.addEventListener("storage",event=>{
+      if(event.key===GAME_USAGE_KEY)sortGamesByUsage();
+    });
+  }
+  initGameOrdering();
   const headerFrames=[...document.querySelectorAll(".pane:not(#pane-games) iframe")];
   for(const frame of headerFrames){
     frame.addEventListener("load",()=>{
@@ -242,6 +280,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
     notifyGame(false);
     if(gameFrame){gameFrame.src="about:blank";gameFrame.remove();gameFrame=null;}
     activeGameKey=null;
+    sortGamesByUsage();
     $("gamesPicker").hidden=false;
     $("gamesBack").hidden=true;
     $("gamesLoading").hidden=true;
@@ -253,6 +292,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #b1e5ff;outline-offset:2p
   function launchGame(key){
     const game=gameInfo[key];
     if(!game)return;
+    recordGameLaunch(key);
     if(gameFrame){notifyGame(false);gameFrame.src="about:blank";gameFrame.remove();gameFrame=null;}
     activeGameKey=key;
     $("gamesPicker").hidden=true;
