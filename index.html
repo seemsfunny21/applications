@@ -205,7 +205,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   const hub=document.getElementById('gamesHub');
   const GAME_LIST=hub.querySelector('.games-options');
   // On-device favourites: count real game launches, never preloads or tab visits.
-  // /applications/ and /applications/apps/ share this one localStorage key.
+  // /applications/ (mobile) and the separate /apps/ desktop site share this key.
   const GAME_USAGE_KEY="applications:game-launch-counts:v1";
   const LAST_GAME_KEY="applications:last-launched-game:v1";
   function gameUsage(){
