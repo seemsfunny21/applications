@@ -273,6 +273,41 @@ const {chromium}=require('playwright');
     });
     try{
       const phone=await mobile.newPage();
+      for(const key of ['tavlifunny','solitairefunny']){
+        const src=new URL('../'+key+'/?mobile-test=landscape-20261122',base).href;
+        await phone.goto(src,{waitUntil:'domcontentloaded',timeout:30000});
+        await phone.locator(key==='tavlifunny'?'.board-wrap':'#game').waitFor({state:'visible'});
+        const result=await phone.evaluate(key=>{
+          const banner=document.querySelector('.suite-game-banner');
+          const shell=document.querySelector('.shell');
+          const board=document.querySelector(key==='tavlifunny'?'.board-wrap':'#game');
+          const r=board.getBoundingClientRect(),sr=shell.getBoundingClientRect();
+          return {
+            bannerDisplay:getComputedStyle(banner).display,
+            transform:getComputedStyle(shell).transform,
+            shell:{x:sr.x,y:sr.y,width:sr.width,height:sr.height},
+            board:{x:r.x,y:r.y,width:r.width,height:r.height},
+            cols:document.querySelectorAll('.column').length,
+            stock:document.getElementById('draw')?.getBoundingClientRect().toJSON(),
+            view:[innerWidth,innerHeight],
+            scroll:[document.documentElement.scrollWidth,document.documentElement.scrollHeight]
+          };
+        },key);
+        assert.equal(result.bannerDisplay,'none',key+' removes banner on mobile');
+        assert.ok(result.board.width>210&&result.board.height>300,
+          key+' board uses landscape space '+JSON.stringify(result));
+        if(key==='solitairefunny'){
+          assert.ok(result.transform.startsWith('matrix(0, 1, -1, 0'),
+            'Solitaire rotates content 90deg without changing device orientation '+JSON.stringify(result));
+          assert.equal(result.cols,7,'All seven solitaire tableau columns visible');
+          assert.ok(result.stock?.width>25&&result.stock?.height>45,
+            'Stock button remains tappable '+JSON.stringify(result));
+          await phone.locator('#draw').click();
+          assert.equal(await phone.locator('#waste .card').count(),1,
+            'Solitaire stock and waste stay interactive after rotation');
+        }
+        console.log('PASS MOBILE '+key+' '+JSON.stringify(result));
+      }
       for(const key of ['tichufunny','tichufunnyonline']){
         const src=new URL('../'+key+'/?mobile-test=1',base).href;
         await phone.goto(src,{waitUntil:'domcontentloaded',timeout:30000});
