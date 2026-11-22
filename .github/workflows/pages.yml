@@ -24,6 +24,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+      - name: Checkout Games collection
+        uses: actions/checkout@v4
+        with:
+          repository: seemsfunny21/games
+          path: games
+          persist-credentials: false
+      - name: Stage games static files
+        run: rm -rf games/.git games/.github games/tests
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static site
