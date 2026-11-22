@@ -355,7 +355,14 @@ const {chromium}=require('playwright');
           const stillOne=await readDrawState();
           assert.equal(stillOne.waste,1,'Current Solitaire match still draws one card');
           assert.equal(stillOne.stock,23,'Exactly one card removed from current stock');
-          await phone.locator('#new').click();
+          assert.equal(await phone.locator('.solitaire-deck #newSide').isVisible(),true,
+            'New Game button placed beneath 1/3-card selection');
+          await phone.locator('#newSide').click();
+          const confirmOrientation=await phone.locator('#gameDialogCover').evaluate(el=>({
+            transform:getComputedStyle(el).transform,visible:!el.hidden
+          }));
+          assert.ok(confirmOrientation.visible&&confirmOrientation.transform.startsWith('matrix(0, 1, -1, 0'),
+            'New Game confirmation is horizontal like the game '+JSON.stringify(confirmOrientation));
           await phone.locator('.game-dialog-actions button', {hasText:'Συνέχεια'}).click();
           const startedThree=await readDrawState();
           assert.equal(startedThree.current,3,'Next Solitaire match starts with draw three');
@@ -369,6 +376,22 @@ const {chromium}=require('playwright');
           const afterReload=await readDrawState();
           assert.equal(afterReload.current,3,'Reload preserves current three-draw game');
           assert.equal(afterReload.next,'1','Reload preserves next game setting');
+          await phone.locator('.hero .funny-help-gear').click();
+          const helpOrientation=await phone.locator('.funny-help-overlay').evaluate(el=>{
+            const r=el.getBoundingClientRect();
+            return {transform:getComputedStyle(el).transform,rect:{x:r.x,y:r.y,w:r.width,h:r.height},
+              viewport:{w:innerWidth,h:innerHeight},hidden:el.hidden};
+          });
+          assert.ok(!helpOrientation.hidden&&helpOrientation.transform.startsWith('matrix(0, 1, -1, 0'),
+            'Help/settings displayed horizontally in portrait phone '+JSON.stringify(helpOrientation));
+          assert.ok(helpOrientation.rect.x>=-1&&helpOrientation.rect.y>=-1&&
+              helpOrientation.rect.w<=helpOrientation.viewport.w+2&&
+              helpOrientation.rect.h<=helpOrientation.viewport.h+2,
+            'Rotated settings fully fit the phone '+JSON.stringify(helpOrientation));
+          await phone.locator('.funny-help-close').click();
+          assert.equal(await phone.locator('.funny-help-overlay').isHidden(),true,
+            'Horizontal settings can be closed');
+          console.log('PASS MOBILE SOLITAIRE LANDSCAPE SETTINGS '+JSON.stringify(helpOrientation));
           console.log('PASS MOBILE SOLITAIRE NEXT-GAME DRAW MODE '+JSON.stringify({initial,pending,stillOne,startedThree,threeDrawn,afterReload}));
         }
         console.log('PASS MOBILE '+key+' '+JSON.stringify(result));
