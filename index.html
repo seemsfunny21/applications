@@ -203,6 +203,44 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','chessfunny','tavlifunny','tichufunny','tichufunnyonline','quizfunny','monopolyfunny']);
   const stage=document.getElementById('stage');
   const hub=document.getElementById('gamesHub');
+  const GAME_LIST=hub.querySelector('.games-options');
+  // On-device favourites: count real game launches, never preloads or tab visits.
+  // /applications/ and /applications/apps/ share this one localStorage key.
+  const GAME_USAGE_KEY="applications:game-launch-counts:v1";
+  function gameUsage(){
+    try{
+      const data=JSON.parse(localStorage.getItem(GAME_USAGE_KEY)||"{}");
+      return data&&typeof data==="object"&&!Array.isArray(data)?data:{};
+    }catch(_){return {};}
+  }
+  function recordGameLaunch(key){
+    const data=gameUsage();
+    const previous=Number(data[key]);
+    data[key]=(Number.isSafeInteger(previous)&&previous>0?previous:0)+1;
+    try{localStorage.setItem(GAME_USAGE_KEY,JSON.stringify(data));}catch(_){}
+    sortGamesByUsage();
+  }
+  function sortGamesByUsage(){
+    const list=GAME_LIST;
+    const buttons=[...list.querySelectorAll("[data-game]")];
+    const counts=gameUsage();
+    // Ties keep the original order, including on the first-ever visit.
+    buttons.sort((a,b)=>{
+      const ac=Number(counts[a.dataset.game])||0,bc=Number(counts[b.dataset.game])||0;
+      return bc-ac||Number(a.dataset.originalIndex)-Number(b.dataset.originalIndex);
+    });
+    list.append(...buttons);
+  }
+  function initGameOrdering(){
+    [...GAME_LIST.querySelectorAll("[data-game]")].forEach((button,i)=>{
+      button.dataset.originalIndex=String(i);
+    });
+    sortGamesByUsage();
+    window.addEventListener("storage",event=>{
+      if(event.key===GAME_USAGE_KEY)sortGamesByUsage();
+    });
+  }
+  initGameOrdering();
   const tabs=Array.from(document.querySelectorAll('.tab'));
   const loading=document.getElementById('loading');
 
@@ -287,12 +325,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   }
   function select(key){
     if(key!=='games'&&(!apps[key]||GAMES.has(key)))return;
+    if(key==='games')sortGamesByUsage();
     current=key;
     activeGame=null;
     show();
   }
   function openGame(key){
     if(!GAMES.has(key))return;
+    recordGameLaunch(key);
     current='games';
     activeGame=key;
     show();
