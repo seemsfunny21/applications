@@ -24,6 +24,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+      # Pull the latest tested Games source into the public Applications site.
       - name: Checkout Games collection
         uses: actions/checkout@v4
         with:
