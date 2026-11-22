@@ -333,9 +333,43 @@ const {chromium}=require('playwright');
 
           assert.ok(result.stock?.width>25&&result.stock?.height>45,
             'Stock button remains tappable '+JSON.stringify(result));
+          const readDrawState=()=>phone.evaluate(()=>{
+            const saved=JSON.parse(localStorage.getItem('solitairefunny:v1')||'null');
+            return {
+              current:saved?.state?.drawCount,stock:saved?.state?.stock?.length,
+              waste:saved?.state?.waste?.length,moves:saved?.state?.moves,
+              next:localStorage.getItem('solitairefunny:nextDrawCount'),
+              selected:[...document.querySelectorAll('.solitaire-deck [data-draw]')].filter(x=>x.getAttribute('aria-pressed')==='true').map(x=>Number(x.dataset.draw))
+            };
+          });
+          const initial=await readDrawState();
+          assert.equal(await phone.locator('.solitaire-deck').isVisible(),true,
+            'Right side progress/draw mode panel visible');
+          assert.equal(initial.current,1,'Default Solitaire match uses draw one');
+          await phone.locator('.solitaire-deck [data-draw="3"]').click();
+          const pending=await readDrawState();
+          assert.equal(pending.next,'3','Three-card draw saved as NEXT match preference');
+          assert.equal(pending.current,1,'Current Solitaire match not changed mid-game');
+          assert.deepEqual(pending.selected,[3],'Draw-three selector visibly active');
           await phone.locator('#draw').click();
-          assert.equal(await phone.locator('#waste .card').count(),1,
-            'Solitaire stock and waste stay interactive after rotation');
+          const stillOne=await readDrawState();
+          assert.equal(stillOne.waste,1,'Current Solitaire match still draws one card');
+          assert.equal(stillOne.stock,23,'Exactly one card removed from current stock');
+          await phone.locator('#new').click();
+          await phone.locator('.game-dialog-choices button', {hasText:'Συνέχεια'}).click();
+          const startedThree=await readDrawState();
+          assert.equal(startedThree.current,3,'Next Solitaire match starts with draw three');
+          assert.equal(startedThree.stock,24,'New match deals full stock');
+          await phone.locator('#draw').click();
+          const threeDrawn=await readDrawState();
+          assert.equal(threeDrawn.stock,21,'Draw-three removes three stock cards');
+          assert.equal(threeDrawn.waste,3,'Draw-three reveals three cards');
+          await phone.locator('.solitaire-deck [data-draw="1"]').click();
+          await phone.reload({waitUntil:'domcontentloaded'});
+          const afterReload=await readDrawState();
+          assert.equal(afterReload.current,3,'Reload preserves current three-draw game');
+          assert.equal(afterReload.next,'1','Reload preserves next game setting');
+          console.log('PASS MOBILE SOLITAIRE NEXT-GAME DRAW MODE '+JSON.stringify({initial,pending,stillOne,startedThree,threeDrawn,afterReload}));
         }
         console.log('PASS MOBILE '+key+' '+JSON.stringify(result));
       }
