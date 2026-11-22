@@ -137,7 +137,7 @@ const {chromium}=require('playwright');
         assert.equal(await frame.locator('#settingsForm #newButton').count(),1,
           'Reversi restart is inside Settings');
         await frame.locator('#settingsButton').click();
-        await frame.locator('input[name="mode"][value="local"]').check();
+        await frame.locator('input[name="mode"][value="local"]').evaluate(el=>el.click());
         await frame.locator('#newButton').click();
         assert.equal(await frame.locator('#settingsDialog').evaluate(x=>x.open),false,
           'Reversi restart closes Settings');
