@@ -309,6 +309,27 @@ const {chromium}=require('playwright');
           assert.ok(cards.tableau&&cards.tableau.width<=64&&cards.tableau.height<=88,
             'Solitaire cards really shrink to compact dimensions '+JSON.stringify(cards));
           console.log('PASS MOBILE SOLITAIRE COMPACT CARDS '+JSON.stringify(cards));
+          const compactColumns=await phone.evaluate(()=>{
+            const columns=document.querySelector('.columns');
+            const game=document.querySelector('#game');
+            const a=columns.getBoundingClientRect();
+            const b=game.getBoundingClientRect();
+            const cs=getComputedStyle(columns);
+            return {
+              width:columns.offsetWidth,columnsWidth:a.width,
+              gameWidth:b.width,gridColumns:cs.gridTemplateColumns,
+              gap:cs.columnGap,emptyRight:(game.clientWidth-columns.offsetWidth),
+              cardWidth:document.querySelector('.column .card')?.offsetWidth
+            };
+          });
+          assert.ok(compactColumns.width<=470&&compactColumns.emptyRight>=250,
+            'Solitaire seven columns are close together, with empty right area '+JSON.stringify(compactColumns));
+          assert.ok(parseFloat(compactColumns.gap)<=3,
+            'Solitaire columns are close to touching '+JSON.stringify(compactColumns));
+          assert.ok(compactColumns.cardWidth>=58,
+            'Keep existing 60px card width '+JSON.stringify(compactColumns));
+          console.log('PASS MOBILE SOLITAIRE GROUPED COLUMNS '+JSON.stringify(compactColumns));
+
 
           assert.ok(result.stock?.width>25&&result.stock?.height>45,
             'Stock button remains tappable '+JSON.stringify(result));
