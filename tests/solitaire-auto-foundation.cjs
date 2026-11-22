@@ -86,6 +86,9 @@ const card=(s,v)=>({s,v,up:true});
   assert.equal(result.stock.length,0,'Three cards removed from stock');
   assert.equal(result.waste.length,3,'Three waste cards retained');
   assert.equal(await page.locator('#waste .card').count(),3,'Three cards drawn visibly');
+  // The user's NEXT-game selector is deliberately independent of the mode
+  // in an already loaded match. Select draw-three before starting the new one.
+  await tap('.solitaire-deck [data-draw="3"]');
   await tap('#newSide');
   await tap('.game-dialog-actions button:last-child');
   result=await state();
