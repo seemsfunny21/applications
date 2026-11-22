@@ -268,8 +268,9 @@ const {chromium}=require('playwright');
     // Favourite games ranking is shared between the launcher and /apps.
     // Verify real clicks alter the list, while merely reopening it does not.
     const gamesUsageKey='applications:game-launch-counts:v1';
+    const lastGameKey='applications:last-launched-game:v1';
     await page.goto(base+'?rankings=reset',{waitUntil:'domcontentloaded'});
-    await page.evaluate(key=>localStorage.removeItem(key),gamesUsageKey);
+    await page.evaluate(([key,last])=>{localStorage.removeItem(key);localStorage.removeItem(last);},[gamesUsageKey,lastGameKey]);
     await page.reload({waitUntil:'domcontentloaded'});
     const displayedOrder=async selector=>page.locator(selector).evaluateAll(items=>items.map(el=>el.dataset.game));
     const natural=await displayedOrder('#gamesList [data-game]');
@@ -279,8 +280,8 @@ const {chromium}=require('playwright');
       await page.locator('#gamesBack').click();
     }
     const rankedApps=await displayedOrder('#gamesList [data-game]');
-    assert.deepEqual(rankedApps.slice(0,2),['solitairefunny','chessfunny'],
-      'Most frequently launched games first in /apps');
+    assert.deepEqual(rankedApps.slice(0,2),['chessfunny','solitairefunny'],
+      'Last opened Chess first; most frequently launched Solitaire next in /apps');
     const counts=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),gamesUsageKey);
     assert.equal(counts.solitairefunny,2,'Two actual Solitaire launches recorded');
     assert.equal(counts.chessfunny,1,'One actual Chess launch recorded');
@@ -292,12 +293,28 @@ const {chromium}=require('playwright');
     await page.locator('#gamesHub [data-game="chessfunny"]').click();
     await page.locator('#tab-games').click();
     const updated=await displayedOrder('#gamesHub [data-game]');
-    assert.equal(updated[0],'solitairefunny',
-      'Equal play counts retain stable original game order');
+    assert.equal(updated[0],'chessfunny',
+      'Last opened game stays first even when counts are tied');
     const finalCounts=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),gamesUsageKey);
     assert.deepEqual({solitaire:finalCounts.solitairefunny,chess:finalCounts.chessfunny},
       {solitaire:2,chess:2},'Launcher click counted but reopening game selection not counted');
-    console.log('PASS GAME POPULARITY RANKING '+JSON.stringify({rankedApps:rankedApps.slice(0,3),rankedLauncher:rankedLauncher.slice(0,3),finalCounts}));
+    await page.locator('#gamesHub [data-game="monopolyfunny"]').click();
+    await page.locator('#tab-games').click();
+    assert.equal((await displayedOrder('#gamesHub [data-game]'))[0],'monopolyfunny',
+      'Monopoly jumps to first place immediately on return, even when Chess/Solitaire were played more');
+    await page.goto(base+'?ranking=revisit',{waitUntil:'domcontentloaded'});
+    assert.equal((await displayedOrder('#gamesList [data-game]'))[0],'monopolyfunny',
+      'Monopoly remains first on desktop /apps after navigating from the main launcher');
+    await page.locator('#gamesList [data-game="tavlifunny"]').click();
+    await page.locator('#gamesBack').click();
+    assert.equal((await displayedOrder('#gamesList [data-game]'))[0],'tavlifunny',
+      'Last opened Tavli jumps first immediately in /apps');
+    await page.reload({waitUntil:'domcontentloaded'});
+    assert.equal((await displayedOrder('#gamesList [data-game]'))[0],'tavlifunny',
+      'Most recently played game remains first after reload');
+    const lastGame=await page.evaluate(key=>localStorage.getItem(key),lastGameKey);
+    assert.equal(lastGame,'tavlifunny','Latest-played preference saved in browser');
+    console.log('PASS GAME POPULARITY RANKING '+JSON.stringify({rankedApps:rankedApps.slice(0,3),rankedLauncher:rankedLauncher.slice(0,3),lastGame,finalCounts}));
     // Mobile portrait: the Tichu view rotates to a landscape felt. Its
     // decorative banner must not consume the phone's short edge any more.
     const mobile=await browser.newContext({
