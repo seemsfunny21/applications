@@ -28,11 +28,21 @@ const card=(s,v)=>({s,v,up:true});
   const context=await browser.newContext({
    viewport:{width:393,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2
   });
+  // Install deterministic state immediately before the game's own startup.
+  // A reload fires the old page's visibility handler, which otherwise rewrites
+  // saved localStorage and can accidentally erase a test fixture.
+  await context.addInitScript(()=>{
+    const pending=sessionStorage.getItem('__solitaire_test_state');
+    if(pending){
+      localStorage.setItem('solitairefunny:v1',pending);
+      sessionStorage.removeItem('__solitaire_test_state');
+    }
+  });
   const page=await context.newPage();
   const url='http://127.0.0.1:'+server.address().port+'/solitairefunny/index.html';
   await page.goto(url,{waitUntil:'domcontentloaded'});
   async function seed(s){
-   await page.evaluate(state=>localStorage.setItem('solitairefunny:v1',JSON.stringify({state,elapsed:0})),s);
+   await page.evaluate(state=>sessionStorage.setItem('__solitaire_test_state',JSON.stringify({state,elapsed:0})),s);
    await page.reload({waitUntil:'domcontentloaded'});
   }
   async function state(){
