@@ -356,7 +356,7 @@ const {chromium}=require('playwright');
           assert.equal(stillOne.waste,1,'Current Solitaire match still draws one card');
           assert.equal(stillOne.stock,23,'Exactly one card removed from current stock');
           await phone.locator('#new').click();
-          await phone.locator('.game-dialog-choices button', {hasText:'Συνέχεια'}).click();
+          await phone.locator('.game-dialog-actions button', {hasText:'Συνέχεια'}).click();
           const startedThree=await readDrawState();
           assert.equal(startedThree.current,3,'Next Solitaire match starts with draw three');
           assert.equal(startedThree.stock,24,'New match deals full stock');
