@@ -207,6 +207,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   // On-device favourites: count real game launches, never preloads or tab visits.
   // /applications/ and /applications/apps/ share this one localStorage key.
   const GAME_USAGE_KEY="applications:game-launch-counts:v1";
+  const LAST_GAME_KEY="applications:last-launched-game:v1";
   function gameUsage(){
     try{
       const data=JSON.parse(localStorage.getItem(GAME_USAGE_KEY)||"{}");
@@ -217,15 +218,23 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     const data=gameUsage();
     const previous=Number(data[key]);
     data[key]=(Number.isSafeInteger(previous)&&previous>0?previous:0)+1;
-    try{localStorage.setItem(GAME_USAGE_KEY,JSON.stringify(data));}catch(_){}
+    try{
+      localStorage.setItem(GAME_USAGE_KEY,JSON.stringify(data));
+      localStorage.setItem(LAST_GAME_KEY,key);
+    }catch(_){}
     sortGamesByUsage();
   }
   function sortGamesByUsage(){
     const list=GAME_LIST;
     const buttons=[...list.querySelectorAll("[data-game]")];
     const counts=gameUsage();
-    // Ties keep the original order, including on the first-ever visit.
+    // The last opened game always comes first. The remaining nine are
+    // ranked by launch frequency; equal counts retain the original order.
+    let last="";
+    try{last=localStorage.getItem(LAST_GAME_KEY)||"";}catch(_){}
     buttons.sort((a,b)=>{
+      if(a.dataset.game===last)return -1;
+      if(b.dataset.game===last)return 1;
       const ac=Number(counts[a.dataset.game])||0,bc=Number(counts[b.dataset.game])||0;
       return bc-ac||Number(a.dataset.originalIndex)-Number(b.dataset.originalIndex);
     });
@@ -237,7 +246,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     });
     sortGamesByUsage();
     window.addEventListener("storage",event=>{
-      if(event.key===GAME_USAGE_KEY)sortGamesByUsage();
+      if(event.key===GAME_USAGE_KEY||event.key===LAST_GAME_KEY)sortGamesByUsage();
     });
   }
   initGameOrdering();
