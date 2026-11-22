@@ -300,6 +300,16 @@ const {chromium}=require('playwright');
           assert.ok(result.transform.startsWith('matrix(0, 1, -1, 0'),
             'Solitaire rotates content 90deg without changing device orientation '+JSON.stringify(result));
           assert.equal(result.cols,7,'All seven solitaire tableau columns visible');
+          const cards=await phone.evaluate(()=>{
+            const card=document.querySelector('.column .card');
+            const top=document.querySelector('.top .slot .card');
+            return {tableau:card?{width:card.offsetWidth,height:card.offsetHeight}:null,
+              top:top?{width:top.offsetWidth,height:top.offsetHeight}:null};
+          });
+          assert.ok(cards.tableau&&cards.tableau.width<=64&&cards.tableau.height<=88,
+            'Solitaire cards really shrink to compact dimensions '+JSON.stringify(cards));
+          console.log('PASS MOBILE SOLITAIRE COMPACT CARDS '+JSON.stringify(cards));
+
           assert.ok(result.stock?.width>25&&result.stock?.height>45,
             'Stock button remains tappable '+JSON.stringify(result));
           await phone.locator('#draw').click();
