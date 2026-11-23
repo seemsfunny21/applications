@@ -193,6 +193,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
             <span class="game-mark" aria-hidden="true">🔗</span>
             <strong>Flow Connect</strong><span>Λογική</span><small>Χρωματιστές διαδρομές</small>
           </button>
+          <button class="game-choice" type="button" data-game="watersort" aria-label="Άνοιγμα Water Sort">
+            <span class="game-mark" aria-hidden="true">🧪</span>
+            <strong>Water Sort</strong><span>Χρωματιστά μπουκάλια</span><small>20 πίστες · 3 δυσκολίες</small>
+          </button>
           <button class="game-choice" type="button" data-game="puzzle15" aria-label="Άνοιγμα Παζλ 15">
             <span class="game-mark" aria-hidden="true">🔢</span>
             <strong>Παζλ 15</strong><span>Λογική</span><small>Αριθμοί σε σειρά</small>
@@ -260,6 +264,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     blackjack:{name:'Blackjack',url:'https://seemsfunny21.github.io/games/blackjack/?v=20261122-levels20-v6'},
     mahjong:{name:'Mahjong Solitaire',url:'https://seemsfunny21.github.io/games/mahjong/?v=20261122-levels20-v6'},
     flowconnect:{name:'Flow Connect',url:'https://seemsfunny21.github.io/games/flow-connect/?v=20261122-flow-unique20-v7'},
+    watersort:{name:'Water Sort',url:'https://seemsfunny21.github.io/games/water-sort/?v=20261123-watersort-v1'},
     puzzle15:{name:'Παζλ 15',url:'https://seemsfunny21.github.io/games/puzzle-15/?v=20261122-levels20-v6'},
     fallingblocks:{name:'Falling Blocks',url:'https://seemsfunny21.github.io/games/falling-blocks/?v=20261122-levels20-v6'},
     brickbreaker:{name:'Brick Breaker',url:'https://seemsfunny21.github.io/games/brick-breaker/?v=20261122-levels20-v6'},
@@ -270,7 +275,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     hangman:{name:'Κρεμάλα',url:'https://seemsfunny21.github.io/games/hangman/?v=20261122-levels20-v6'},
     memorymatch:{name:'Memory Match',url:'https://seemsfunny21.github.io/games/memory-match/?v=20261122-levels20-v6'}
   });
-  const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','chessfunny','tavlifunny','tichufunny','tichufunnyonline','quizfunny','monopolyfunny','battleship','pyramidsolitaire','blackjack','mahjong','flowconnect','puzzle15','fallingblocks','brickbreaker','spaceinvaders','mazechase','frogger','wordsearch','hangman','memorymatch']);
+  const GAMES=new Set(['sudokufunny','reversifunny','minesweeperfunny','solitairefunny','chessfunny','tavlifunny','tichufunny','tichufunnyonline','quizfunny','monopolyfunny','battleship','pyramidsolitaire','blackjack','mahjong','flowconnect','puzzle15','fallingblocks','brickbreaker','spaceinvaders','mazechase','frogger','wordsearch','hangman','memorymatch','watersort']);
   const stage=document.getElementById('stage');
   const hub=document.getElementById('gamesHub');
   const GAME_LIST=hub.querySelector('.games-options');
