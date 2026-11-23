@@ -8,7 +8,7 @@ const gameRoutes={
  tichufunny:'tichufunny',tichufunnyonline:'tichufunnyonline',
  quizfunny:'quizfunny',monopolyfunny:'monopolyfunny',
  battleship:'battleship',pyramidsolitaire:'pyramid-solitaire',
- blackjack:'blackjack',mahjong:'mahjong',flowconnect:'flow-connect',
+ blackjack:'blackjack',mahjong:'mahjong',flowconnect:'flow-connect',watersort:'water-sort',
  puzzle15:'puzzle-15',fallingblocks:'falling-blocks',
  brickbreaker:'brick-breaker',spaceinvaders:'space-invaders',
  mazechase:'maze-chase',frogger:'frogger',wordsearch:'word-search',
@@ -21,7 +21,7 @@ for(const [route,folder] of Object.entries(gameRoutes)){
  assert.equal(url.origin,'https://seemsfunny21.github.io','Game origin remains shared');
  assert.equal(url.pathname,'/games/'+folder+'/','Only central Games hosts '+route);
 }
-assert.equal(Object.keys(gameRoutes).length,24);
+assert.equal(Object.keys(gameRoutes).length,25);
 for(const folder of ['chessfunny','tavlifunny','solitairefunny','minesweeperfunny','tichufunny','tichufunnyonline'])
  assert.ok(!html.includes("url:'./"+folder+"/"),'No old local game reference '+folder);
-console.log('PASS 24 canonical Games URLs in Applications, with no legacy local game references');
+console.log('PASS 25 canonical Games URLs in Applications, with no legacy local game references');
