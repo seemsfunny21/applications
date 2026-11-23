@@ -2,7 +2,7 @@
    The PWAs share a GitHub Pages origin, so caches are strictly namespaced.
    This service worker controls ONLY /applications/. */
 const PREFIX = "applications-shell-";
-const CACHE = PREFIX + "v45-water-challenge";
+const CACHE = PREFIX + "v46-games-900-audit";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest",
   "./icon.svg", "./icon-192.png", "./icon-512.png", "./games-hero.svg"];
 
