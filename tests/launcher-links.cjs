@@ -24,4 +24,6 @@ for(const [route,folder] of Object.entries(gameRoutes)){
 assert.equal(Object.keys(gameRoutes).length,25);
 for(const folder of ['chessfunny','tavlifunny','solitairefunny','minesweeperfunny','tichufunny','tichufunnyonline'])
  assert.ok(!html.includes("url:'./"+folder+"/"),'No old local game reference '+folder);
+assert.ok(!/willtheycome|will-they-come/.test(html),'No duplicate arrival game in launcher');
+assert.equal((html.match(/data-game="/g)||[]).length,25,'25 game choices');
 console.log('PASS 25 canonical Games URLs in Applications, with no legacy local game references');
