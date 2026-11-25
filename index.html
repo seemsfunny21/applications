@@ -18,45 +18,27 @@
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--fg)}
 .app{display:flex;flex-direction:column;width:100%;height:100vh;height:100dvh;overflow:hidden;background:var(--bg)}
-.tabs{
-  display:grid;grid-template-columns:repeat(8,minmax(0,1fr));flex:0 0 auto;
-  gap:3px;align-items:stretch;min-height:47px;
-  padding:calc(5px + env(safe-area-inset-top,0px)) 5px 5px;
-  background:linear-gradient(180deg,#112b49,#091b30);
-  border-bottom:1px solid #416b984f;box-shadow:0 4px 16px #020a1480;z-index:3
-}
-.tab{
-  appearance:none;min-width:0;min-height:39px;cursor:pointer;
-  background:#122c49;border:1px solid transparent;border-radius:10px;
-  color:#bed2e8;font-size:clamp(9px,2.45vw,12.5px);font-weight:750;
-  letter-spacing:-.035em;line-height:1.1;text-align:center;
-  padding:7px 0;white-space:nowrap;overflow:hidden;text-overflow:clip;
-  -webkit-tap-highlight-color:transparent;
-  transition:background .16s,color .16s,border-color .16s;
-}
-.tab[aria-selected="true"]{
-  background:linear-gradient(155deg,#205586,#173b64);
-  border-color:#63b6ff93;color:#fff;
-  box-shadow:inset 0 1px #ffffff2a,0 0 14px #1784e329;
-}
-.tab:focus-visible{outline:2px solid #a9deff;outline-offset:-3px}
-.tab:active{filter:brightness(1.2)}
-.tab{touch-action:manipulation}
-.tab .tab-short{display:none}
-@media(max-width:620px){
- .tab .tab-full{display:none}
- .tab .tab-short{display:inline}
-}
-@media(hover:hover){
- .tab:not([aria-selected="true"]):hover{
-  color:#edf8ff;background:#194166;border-color:#396b9a;
-  box-shadow:inset 0 1px rgba(255,255,255,.06);
- }
-}
-@media(max-width:420px){
- .tabs{gap:2px;padding-left:3px;padding-right:3px}
- .tab{font-size:clamp(8px,2.15vw,10px);letter-spacing:-.04em;border-radius:9px}
-}
+.app-toolbar{flex:0 0 auto;display:flex;align-items:center;gap:10px;min-height:45px;padding:calc(4px + env(safe-area-inset-top,0px)) 8px 4px;background:linear-gradient(180deg,#112b49,#091b30);border-bottom:1px solid #416b984f;z-index:3}
+.app-toolbar[hidden]{display:none}
+.home-back{display:flex;align-items:center;gap:7px;min-height:36px;padding:5px 10px;border:1px solid #4576a1;border-radius:10px;background:#153652;color:#e9f5ff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.home-back svg{width:17px;height:17px}
+.active-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:700;color:#cee7ff}
+.launcher{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;padding:calc(22px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px));background:radial-gradient(ellipse at 50% 0%,#193d68 0%,#071426 68%);display:flex;align-items:flex-start;justify-content:center}
+.launcher[hidden]{display:none}
+.launcher-inner{width:min(100%,680px);margin:auto;text-align:center}
+.launcher-brand{display:block;width:58px;height:58px;margin:0 auto 13px;border-radius:17px;box-shadow:0 8px 30px #0a7bc93b}
+.launcher h1{font-size:clamp(24px,6vw,32px);letter-spacing:-.04em;margin:0 0 23px}
+.app-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.app-choice{appearance:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;min-width:0;min-height:112px;padding:13px 3px;background:linear-gradient(145deg,#163c68,#0a2442);border:1px solid #5da8f27a;border-radius:17px;color:#f4f9ff;box-shadow:0 7px 20px #020b1f60,inset 0 1px #ffffff14;cursor:pointer;touch-action:manipulation;transition:filter .15s,transform .15s;font:inherit}
+.app-symbol{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:linear-gradient(145deg,#205a89,#10375d);border:1px solid #82c6ff66;color:#a6dcff;box-shadow:0 0 20px #138bdb29}
+.app-symbol svg{width:27px;height:27px}
+.app-choice strong{font-size:clamp(11px,3.1vw,15px);line-height:1.2;overflow-wrap:anywhere;text-align:center}
+.app-choice:active{filter:brightness(1.2);transform:scale(.97)}
+.app-choice:focus-visible,.home-back:focus-visible{outline:2px solid #a9deff;outline-offset:2px}
+@media(hover:hover){.app-choice:hover{filter:brightness(1.16);transform:translateY(-2px)}}
+@media(min-width:761px){.app-choice{min-height:150px}.app-symbol{width:58px;height:58px}.app-symbol svg{width:32px;height:32px}}
+@media(max-width:360px){.app-grid{gap:7px}.launcher{padding-left:10px;padding-right:10px}.app-choice{min-height:101px;border-radius:14px}}
+@media(max-height:500px) and (orientation:landscape){.launcher{padding-top:10px}.launcher-brand{display:none}.launcher h1{margin-bottom:12px}.app-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.app-choice{min-height:100px}}
 .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#061424;isolation:isolate}
 .app-frame{display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#061424}
 .app-frame.active{display:block;z-index:1}
@@ -119,17 +101,18 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 </head>
 <body>
 <div class="app">
-  <nav class="tabs" aria-label="Επιλογή εφαρμογής" role="tablist">
-    <button class="tab" id="tab-voltes" type="button" role="tab" aria-label="Ποδηλασία" aria-controls="frame-voltes" aria-selected="true" data-app="voltes"><span class="tab-full">Ποδηλασία</span><span class="tab-short">Ποδηλ.</span></button>
-    <button class="tab" id="tab-douleia" type="button" role="tab" aria-label="Δρομολόγια" aria-controls="frame-douleia" aria-selected="false" data-app="douleia"><span class="tab-full">Δρομολόγια</span><span class="tab-short">Δρομολ.</span></button>
-    <button class="tab" id="tab-reminder" type="button" role="tab" aria-label="Υπενθυμίσεις" aria-controls="frame-reminder" aria-selected="false" data-app="reminder"><span class="tab-full">Υπενθυμίσεις</span><span class="tab-short">Υπενθ.</span></button>
-    <button class="tab" id="tab-Parking" type="button" role="tab" aria-label="Parking" aria-controls="frame-Parking" aria-selected="false" data-app="Parking"><span>Parking</span></button>
-    <button class="tab" id="tab-kairos" type="button" role="tab" aria-label="Καιρός" aria-controls="frame-kairos" aria-selected="false" data-app="kairos"><span>Καιρός</span></button>
-    <button class="tab" id="tab-tvguide" type="button" role="tab" aria-label="TV Guide" aria-controls="frame-tvguide" aria-selected="false" data-app="tvguide"><span>TV</span></button>
-    <button class="tab" id="tab-predictions" type="button" role="tab" aria-label="Προβλέψεις" aria-controls="frame-predictions" aria-selected="false" data-app="predictions"><span class="tab-full">Προβλέψεις</span><span class="tab-short">Προβλ.</span></button>
-    <button class="tab" id="tab-games" type="button" role="tab" aria-label="Παιχνίδια" aria-controls="gamesHub" aria-selected="false" data-app="games"><span class="tab-full">Παιχνίδια</span><span class="tab-short">Παιχν.</span></button>
-  </nav>
+  <header class="app-toolbar" id="appToolbar" hidden><button class="home-back" id="homeBack" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6M8 12h13"/></svg><span id="backLabel">Εφαρμογές</span></button><strong class="active-title" id="activeTitle"></strong></header>
   <main class="stage" id="stage" aria-label="Περιεχόμενο εφαρμογής">
+    <section class="launcher" id="launcher" aria-label="Οι εφαρμογές μου"><div class="launcher-inner"><img class="launcher-brand" src="./icon.svg" alt="" width="58" height="58"><h1>Οι εφαρμογές μου</h1><div class="app-grid">
+          <button class="app-choice" type="button" id="tab-voltes" data-app="voltes" aria-label="Άνοιγμα Ποδηλασία"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="17" r="4"/><circle cx="19" cy="17" r="4"/><path d="m5 17 5-9 5 9H5l4-6h7l3 6M8 8h4m4-4h3"/></svg></span><strong>Ποδηλασία</strong></button>
+          <button class="app-choice" type="button" id="tab-douleia" data-app="douleia" aria-label="Άνοιγμα Δρομολόγια"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="13" height="12" rx="2"/><path d="M15 9h4l3 4v4h-7"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><strong>Δρομολόγια</strong></button>
+          <button class="app-choice" type="button" id="tab-reminder" data-app="reminder" aria-label="Άνοιγμα Υπενθυμίσεις"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><strong>Υπενθυμίσεις</strong></button>
+          <button class="app-choice" type="button" id="tab-Parking" data-app="Parking" aria-label="Άνοιγμα Parking"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg></span><strong>Parking</strong></button>
+          <button class="app-choice" type="button" id="tab-kairos" data-app="kairos" aria-label="Άνοιγμα Καιρός"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M9 1v2M2 8H0m4-5L2 1m13 3 2-2M4 19a4 4 0 0 1 0-8 6 6 0 0 1 11 2h3a3 3 0 0 1 0 6Z"/></svg></span><strong>Καιρός</strong></button>
+          <button class="app-choice" type="button" id="tab-tvguide" data-app="tvguide" aria-label="Άνοιγμα TV Guide"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="15" rx="3"/><path d="m7 2 5 4 5-4M9 17h6"/></svg></span><strong>TV Guide</strong></button>
+          <button class="app-choice" type="button" id="tab-predictions" data-app="predictions" aria-label="Άνοιγμα Προβλέψεις"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/><path d="m12 12 9-9"/></svg></span><strong>Προβλέψεις</strong></button>
+          <button class="app-choice" type="button" id="tab-games" data-app="games" aria-label="Άνοιγμα Παιχνίδια"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10a4 4 0 0 1 4 4l1 6a3 3 0 0 1-5 2l-3-3h-4l-3 3a3 3 0 0 1-5-2l1-6a4 4 0 0 1 4-4ZM7 10v5m-2.5-2.5h5M16 11h.01M19 14h.01"/></svg></span><strong>Παιχνίδια</strong></button>
+        </div></div></section>
     <section class="games-hub" id="gamesHub" aria-label="Επιλογή παιχνιδιού" hidden>
       <div class="games-shell">
         <img class="games-hero-art" src="./games-hero.svg" width="900" height="300" alt="Παιχνίδια — μπλε φωτεινή συλλογή με σκάκι, κάρτες και ζάρια" decoding="async">
@@ -239,7 +222,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
         <p class="games-tip">Για να αλλάξεις παιχνίδι, πάτησε ξανά την καρτέλα «Παιχνίδια».</p>
       </div>
     </section>
-    <div class="loading" id="loading" role="status" aria-live="polite"><div><span aria-hidden="true"></span>Άνοιγμα Ποδηλασίας…</div></div>
+    <div class="loading" id="loading" role="status" aria-live="polite" hidden><div><span aria-hidden="true"></span>Άνοιγμα Ποδηλασίας…</div></div>
   </main>
 </div>
 <script>
@@ -322,14 +305,18 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     });
   }
   initGameOrdering();
-  const tabs=Array.from(document.querySelectorAll('.tab'));
+  const tiles=Array.from(document.querySelectorAll('.app-choice'));
+  const launcher=document.getElementById('launcher');
+  const toolbar=document.getElementById('appToolbar');
+  const backLabel=document.getElementById('backLabel');
+  const activeTitle=document.getElementById('activeTitle');
   const loading=document.getElementById('loading');
 
   // Instant switching: no curtain, animations, or transition timers.
   const frames=new Map(),ready=new Set();
-  let current='voltes',activeGame=null,warmupStarted=false;
-  function activeKey(){return current==='games'?activeGame:current}
-  function activeScreen(){return current==='games'&&!activeGame?hub:frames.get(activeKey())||null}
+  let current='home',activeGame=null,warmupStarted=false;
+  function activeKey(){return current==='home'?null:current==='games'?activeGame:current}
+  function activeScreen(){return current==='home'?launcher:current==='games'&&!activeGame?hub:frames.get(activeKey())||null}
   function notifyGameVisibility(){
     for(const key of GAMES){
       const frame=frames.get(key);
@@ -387,9 +374,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   function show(){
     enforceVisibleTabs();
     const active=activeKey();
-    for(const tab of tabs){
-      tab.setAttribute('aria-selected',tab.dataset.app===current?'true':'false');
-    }
+    launcher.hidden=current!=='home';
+    launcher.setAttribute('aria-hidden',launcher.hidden?'true':'false');
+    toolbar.hidden=current==='home';
+    backLabel.textContent=activeGame?'Παιχνίδια':'Εφαρμογές';
+    activeTitle.textContent=active?apps[active].name:current==='games'?'Παιχνίδια':'';
     if(active)createFrame(active);
     for(const [id,frame] of frames){
       const visible=id===active;
@@ -398,14 +387,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
       else frame.setAttribute('inert','');
       frame.setAttribute('aria-hidden',visible?'false':'true');
     }
-    hub.hidden=!!active;
-    hub.setAttribute('aria-hidden',active?'true':'false');
+    hub.hidden=current!=='games'||!!active;
+    hub.setAttribute('aria-hidden',hub.hidden?'true':'false');
     loading.hidden=!active||ready.has(active);
     if(active&&!ready.has(active))loading.textContent='Άνοιγμα '+apps[active].name+'…';
     notifyGameVisibility();
   }
   function select(key){
-    if(key!=='games'&&(!apps[key]||GAMES.has(key)))return;
+    if(key!=='home'&&key!=='games'&&(!apps[key]||GAMES.has(key)))return;
     if(key==='games')sortGamesByUsage();
     current=key;
     activeGame=null;
@@ -418,9 +407,28 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     activeGame=key;
     show();
   }
-  tabs.forEach(tab=>tab.addEventListener('click',()=>select(tab.dataset.app)));
+  function routeUrl(key){
+    const url=new URL(location.href);
+    if(key==='home'){url.searchParams.delete('app');url.searchParams.delete('room');}
+    else{url.searchParams.set('app',key);if(key!=='tichufunnyonline')url.searchParams.delete('room');}
+    return url;
+  }
+  function navigate(key){
+    if(key!== 'home' && key!=='games' && !apps[key])return;
+    if(key===(activeKey()||current))return;
+    history.pushState({app:key},'',routeUrl(key));
+    if(GAMES.has(key))openGame(key);
+    else select(key);
+  }
+  tiles.forEach(tile=>tile.addEventListener('click',()=>navigate(tile.dataset.app)));
+  document.getElementById('homeBack').addEventListener('click',()=>navigate(activeGame?'games':'home'));
+  window.addEventListener('popstate',()=>{
+    const key=new URLSearchParams(location.search).get('app');
+    if(GAMES.has(key)){current='games';activeGame=key;show();}
+    else select(key==='games'?'games':apps[key]?key:'home');
+  });
   hub.querySelectorAll('[data-game]').forEach(btn=>
-    btn.addEventListener('click',()=>openGame(btn.dataset.game)));
+    btn.addEventListener('click',()=>navigate(btn.dataset.game)));
   document.addEventListener('visibilitychange',()=>{
     notifyGameVisibility();
   });
@@ -431,7 +439,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
   });
   const first=new URLSearchParams(location.search).get('app');
   if(GAMES.has(first))openGame(first);
-  else select(first==='games'?'games':apps[first]?first:'voltes');
+  else select(first==='games'?'games':apps[first]?first:'home');
 
   // Preload the usual apps only; games open on demand to avoid unnecessary
   // timers and CPU activity while the user is in another project.
