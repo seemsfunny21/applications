@@ -26,7 +26,7 @@ for(const folder of ['chessfunny','tavlifunny','solitairefunny','minesweeperfunn
  assert.ok(!html.includes("url:'./"+folder+"/"),'No old local game reference '+folder);
 assert.ok(!/willtheycome|will-they-come/.test(html),'No duplicate arrival game in launcher');
 assert.equal((html.match(/data-game="/g)||[]).length,25,'25 game choices');
-assert.equal((html.match(/data-app="/g)||[]).length,9,'Nine home application tiles');
+assert.equal((html.match(/data-app="/g)||[]).length,11,'Eleven home application tiles');
 assert.match(html,/id="tab-predictions"[^>]*data-app="predictions"/);
 assert.match(html,/predictions:\{name:'Προβλέψεις',url:'https:\/\/seemsfunny21\.github\.io\/predictions\/'\}/);
 assert.ok(!/data-game="predictions"/.test(html),'Predictions is not a duplicate game');
@@ -46,3 +46,9 @@ assert.match(html,/function moveTile\(/);
 assert.match(html,/pointerup/);
 assert.match(html,/function persistOrder\(/);
 console.log('PASS warehouse tile and personal order controls');
+
+for(const [id,name] of [['adeies','Άδειες'],['staff','Προσωπικό']]){
+ assert.ok(html.includes('id="tab-'+id+'" data-app="'+id+'"'),'Standalone '+id+' tile');
+ assert.ok(html.includes(id+':{name:"'+name+'",url:"https://seemsfunny21.github.io/'+id+'/"}'),'Correct '+id+' URL');
+}
+console.log('PASS standalone leave and staff tiles');
