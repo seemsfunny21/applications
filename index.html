@@ -97,13 +97,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 }
 @media(hover:hover){.game-choice:hover{filter:brightness(1.16);transform:translateY(-2px)}}
 
+.app-orderbar{display:flex;justify-content:center;gap:7px;margin:0 0 10px}.app-orderbar button{font:inherit;font-size:12px;color:#d9ecff;background:#183c60;border:1px solid #5783aa;border-radius:8px;padding:7px 12px;cursor:pointer}.app-orderbar button[aria-pressed=true]{background:#246751;border-color:#76d9b6}.app-orderbar button[hidden],#appOrderHint[hidden]{display:none}#appOrderHint{font-size:12px;color:#c7e4ff;margin:0 0 9px}.app-grid.editing .app-choice{touch-action:none;cursor:grab;user-select:none;border-style:dashed}.app-grid.editing .app-choice.order-picked{outline:2px solid #77e7be;outline-offset:1px;background:#215b52}.app-grid.editing .app-choice.order-target{outline:2px solid #9ed5ff}
 </style>
 </head>
 <body>
 <div class="app">
   <header class="app-toolbar" id="appToolbar" hidden><button class="home-back" id="homeBack" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6M8 12h13"/></svg><span id="backLabel">Εφαρμογές</span></button><strong class="active-title" id="activeTitle"></strong></header>
   <main class="stage" id="stage" aria-label="Περιεχόμενο εφαρμογής">
-    <section class="launcher" id="launcher" aria-label="Οι εφαρμογές μου"><div class="launcher-inner"><img class="launcher-brand" src="./icon.svg" alt="" width="58" height="58"><h1>Οι εφαρμογές μου</h1><div class="app-grid">
+    <section class="launcher" id="launcher" aria-label="Οι εφαρμογές μου"><div class="launcher-inner"><img class="launcher-brand" src="./icon.svg" alt="" width="58" height="58"><h1>Οι εφαρμογές μου</h1><div class="app-orderbar"><button id="editAppOrder" type="button" aria-pressed="false">↕ Αλλαγή σειράς</button><button id="resetAppOrder" type="button" hidden>Επαναφορά</button></div><p id="appOrderHint" hidden role="status">Σύρε ένα κουτάκι στη νέα θέση ή επίλεξε δύο διαδοχικά.</p><div class="app-grid">
           <button class="app-choice" type="button" id="tab-voltes" data-app="voltes" aria-label="Άνοιγμα Ποδηλασία"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="17" r="4"/><circle cx="19" cy="17" r="4"/><path d="m5 17 5-9 5 9H5l4-6h7l3 6M8 8h4m4-4h3"/></svg></span><strong>Ποδηλασία</strong></button>
           <button class="app-choice" type="button" id="tab-douleia" data-app="douleia" aria-label="Άνοιγμα Δρομολόγια"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="13" height="12" rx="2"/><path d="M15 9h4l3 4v4h-7"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><strong>Δρομολόγια</strong></button>
           <button class="app-choice" type="button" id="tab-reminder" data-app="reminder" aria-label="Άνοιγμα Υπενθυμίσεις"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><strong>Υπενθυμίσεις</strong></button>
@@ -111,6 +112,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
           <button class="app-choice" type="button" id="tab-kairos" data-app="kairos" aria-label="Άνοιγμα Καιρός"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M9 1v2M2 8H0m4-5L2 1m13 3 2-2M4 19a4 4 0 0 1 0-8 6 6 0 0 1 11 2h3a3 3 0 0 1 0 6Z"/></svg></span><strong>Καιρός</strong></button>
           <button class="app-choice" type="button" id="tab-tvguide" data-app="tvguide" aria-label="Άνοιγμα Πρόγραμμα τηλεόρασης"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="15" rx="3"/><path d="m7 2 5 4 5-4M9 17h6"/></svg></span><strong>Πρόγραμμα τηλεόρασης</strong></button>
           <button class="app-choice" type="button" id="tab-predictions" data-app="predictions" aria-label="Άνοιγμα Προβλέψεις"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/><path d="m12 12 9-9"/></svg></span><strong>Προβλέψεις</strong></button>
+          <button class="app-choice" type="button" id="tab-apothiki" data-app="apothiki" aria-label="Άνοιγμα Αποθήκη"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 12 3l9 6v12H3zM7 21V10h10v11M7 14h10M7 17h10"/></svg></span><strong>Αποθήκη</strong></button>
           <button class="app-choice" type="button" id="tab-games" data-app="games" aria-label="Άνοιγμα Παιχνίδια"><span class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10a4 4 0 0 1 4 4l1 6a3 3 0 0 1-5 2l-3-3h-4l-3 3a3 3 0 0 1-5-2l1-6a4 4 0 0 1 4-4ZM7 10v5m-2.5-2.5h5M16 11h.01M19 14h.01"/></svg></span><strong>Παιχνίδια</strong></button>
         </div></div></section>
     <section class="games-hub" id="gamesHub" aria-label="Επιλογή παιχνιδιού" hidden>
@@ -229,6 +231,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
 (() => {
   'use strict';
   const apps=Object.freeze({
+    apothiki:{name:"Αποθήκη",url:"https://seemsfunny21.github.io/Apothiki/"},
     voltes:{name:'Ποδηλασία',url:'https://seemsfunny21.github.io/voltes/'},
     douleia:{name:'Δρομολόγια',url:'https://seemsfunny21.github.io/douleia/'},
     reminder:{name:'Υπενθυμίσεις',url:'https://seemsfunny21.github.io/reminder/'},
@@ -420,7 +423,25 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:no
     if(GAMES.has(key))openGame(key);
     else select(key);
   }
-  tiles.forEach(tile=>tile.addEventListener('click',()=>navigate(tile.dataset.app)));
+  const APP_ORDER_KEY="applications:tile-order:v1", appGrid=document.querySelector(".app-grid"), orderBtn=document.getElementById("editAppOrder"), resetBtn=document.getElementById("resetAppOrder"), orderHint=document.getElementById("appOrderHint");
+  const defaultOrder=tiles.map(t=>t.dataset.app);
+  function normalizeOrder(saved){return [...new Set([...(Array.isArray(saved)?saved.filter(k=>defaultOrder.includes(k)):[]),...defaultOrder])]}
+  function applyOrder(order){const map=new Map(tiles.map(t=>[t.dataset.app,t]));appGrid.append(...normalizeOrder(order).map(k=>map.get(k)))}
+  try{applyOrder(JSON.parse(localStorage.getItem(APP_ORDER_KEY)||"null"))}catch(_){}
+  let editingOrder=false, pickedTile=null, pointerStart=null, suppressClick=false;
+  function persistOrder(){try{localStorage.setItem(APP_ORDER_KEY,JSON.stringify([...appGrid.children].map(t=>t.dataset.app)));orderHint.textContent="Η σειρά αποθηκεύτηκε. Σύρε ή επίλεξε δύο κουτάκια."}catch(_){orderHint.textContent="Η σειρά άλλαξε, αλλά δεν αποθηκεύτηκε στον browser."}}
+  function clearPicked(){pickedTile=null;tiles.forEach(t=>t.classList.remove("order-picked","order-target"))}
+  function moveTile(from,to){if(!from||!to||from===to)return;const list=[...appGrid.children],a=list.indexOf(from),b=list.indexOf(to);if(a<0||b<0)return;list.splice(a,1);list.splice(b,0,from);appGrid.append(...list);clearPicked();persistOrder()}
+  function setOrderMode(on){editingOrder=on;clearPicked();pointerStart=null;appGrid.classList.toggle("editing",on);orderBtn.setAttribute("aria-pressed",String(on));orderBtn.textContent=on?"✓ Τέλος":"↕ Αλλαγή σειράς";resetBtn.hidden=!on;orderHint.hidden=!on;orderHint.textContent="Σύρε ένα κουτάκι στη νέα θέση ή επίλεξε δύο διαδοχικά."}
+  orderBtn.addEventListener("click",()=>setOrderMode(!editingOrder));
+  resetBtn.addEventListener("click",()=>{applyOrder(defaultOrder);clearPicked();persistOrder()});
+  tiles.forEach(tile=>tile.addEventListener("click",()=>{if(suppressClick){suppressClick=false;return}if(!editingOrder){navigate(tile.dataset.app);return}if(pickedTile&&pickedTile!==tile){moveTile(pickedTile,tile);return}if(pickedTile===tile){clearPicked();return}clearPicked();pickedTile=tile;tile.classList.add("order-picked")}));
+  appGrid.addEventListener("pointerdown",e=>{if(!editingOrder||e.button!==0)return;const tile=e.target.closest(".app-choice");if(tile){suppressClick=false;pointerStart={tile,id:e.pointerId,x:e.clientX,y:e.clientY,moved:false};tile.setPointerCapture?.(e.pointerId)}});
+  appGrid.addEventListener("pointermove",e=>{const p=pointerStart;if(!p||p.id!==e.pointerId)return;if(Math.hypot(e.clientX-p.x,e.clientY-p.y)>8)p.moved=true;if(!p.moved)return;clearPicked();p.tile.classList.add("order-picked");const target=document.elementFromPoint(e.clientX,e.clientY)?.closest(".app-choice");if(target&&target!==p.tile)target.classList.add("order-target")});
+  appGrid.addEventListener("pointerup",e=>{const p=pointerStart;if(!p||p.id!==e.pointerId)return;pointerStart=null;if(p.moved){const to=document.elementFromPoint(e.clientX,e.clientY)?.closest(".app-choice");suppressClick=true;moveTile(p.tile,to);clearPicked();setTimeout(()=>{suppressClick=false},400)}});
+  appGrid.addEventListener("pointercancel",()=>{pointerStart=null;clearPicked()});
+  appGrid.addEventListener("keydown",e=>{if(!editingOrder||!e.altKey||!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key))return;const tile=e.target.closest(".app-choice"),list=[...appGrid.children],i=list.indexOf(tile),cols=getComputedStyle(appGrid).gridTemplateColumns.split(" ").length,delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-cols,ArrowDown:cols}[e.key];if(i>=0&&list[i+delta]){e.preventDefault();moveTile(tile,list[i+delta]);tile.focus()}});
+  window.addEventListener("storage",e=>{if(e.key===APP_ORDER_KEY&&!editingOrder){try{applyOrder(JSON.parse(e.newValue||"null"))}catch(_){}}});
   document.getElementById('homeBack').addEventListener('click',()=>navigate(activeGame?'games':'home'));
   window.addEventListener('popstate',()=>{
     const key=new URLSearchParams(location.search).get('app');
